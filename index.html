@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urbanstay 후기 평점 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117; --bg2: #1a1d27; --bg3: #22263a;
+    --accent: #4f8cff; --accent2: #a78bfa;
+    --green: #34d399; --red: #f87171; --yellow: #fbbf24;
+    --text: #e2e8f0; --text2: #94a3b8;
+    --border: #2d3148; --card: #1e2235;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; min-height: 100vh; }
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .header-logo { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; color: var(--accent); }
+  .header-logo span { color: var(--text2); font-weight: 300; }
+  .last-updated { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 32px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+  .tab { padding: 10px 20px; border-radius: 8px 8px 0 0; border: none; background: transparent; color: var(--text2); cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; font-weight: 500; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom: 2px solid var(--accent); background: rgba(79,140,255,0.06); }
+  .filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 13px; color: var(--text2); }
+  select, input { background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; outline: none; cursor: pointer; transition: border 0.2s; }
+  select:hover, input:hover, select:focus, input:focus { border-color: var(--accent); }
+  .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color 0.2s; }
+  .summary-card:hover { border-color: var(--accent); }
+  .summary-card .label { font-size: 12px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .summary-card .value { font-size: 28px; font-weight: 700; color: var(--accent); font-family: 'DM Mono', monospace; line-height: 1; }
+  .summary-card .sub { font-size: 12px; color: var(--text2); margin-top: 6px; }
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .table-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .table-title { font-size: 15px; font-weight: 600; }
+  .table-count { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
+  .table-container { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--bg2); padding: 10px 16px; text-align: left; font-weight: 500; color: var(--text2); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+  td { padding: 10px 16px; border-top: 1px solid var(--border); white-space: nowrap; }
+  tr:hover td { background: rgba(79,140,255,0.04); }
+  .rating-high { color: var(--green); font-weight: 600; }
+  .rating-mid { color: var(--yellow); font-weight: 600; }
+  .rating-low { color: var(--red); font-weight: 600; }
+  .up { color: var(--green); } .down { color: var(--red); } .neutral { color: var(--text2); }
+  .stars { color: var(--yellow); letter-spacing: -2px; font-size: 12px; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 90%; max-width: 900px; max-height: 85vh; overflow-y: auto; padding: 28px; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-size: 20px; font-weight: 700; }
+  .modal-close { background: var(--bg3); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { border-color: var(--accent); color: var(--accent); }
+  .loading { display: flex; align-items: center; justify-content: center; padding: 60px; flex-direction: column; gap: 16px; color: var(--text2); }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { padding: 60px; text-align: center; color: var(--text2); font-size: 14px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .badge-blue { background: rgba(79,140,255,0.15); color: var(--accent); }
+  .search-input { flex: 1; max-width: 240px; }
+  .clickable { cursor: pointer; }
+  .clickable:hover td { background: rgba(79,140,255,0.08) !important; }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px; border-top: 1px solid var(--border); }
+  .page-btn { background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-family: 'Noto Sans KR', sans-serif; transition: all 0.2s; }
+  .page-btn:hover, .page-btn.active { border-color: var(--accent); color: var(--accent); }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+  .page-info { font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; margin-top: 20px; }
+  @media (max-width: 768px) { .container { padding: 16px; } .header { padding: 12px 16px; } .summary-cards { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-logo">Urbanstay <span>후기 대시보드</span></div>
+  <div class="last-updated" id="lastUpdated">데이터 로딩 중...</div>
+</div>
+<div class="container">
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('google')">🔍 구글 후기</button>
+    <button class="tab" onclick="switchTab('tripadvisor')">✈️ 트립어드바이저</button>
+    <button class="tab" onclick="switchTab('ota')">🏨 OTA 점수</button>
+  </div>
+  <div id="tab-google">
+    <div class="filters">
+      <span class="filter-label">지점</span>
+      <select id="google-branch" onchange="renderGoogle()"><option value="">전체 지점</option></select>
+      <span class="filter-label">주차</span>
+      <select id="google-period" onchange="renderGoogle()"><option value="">전체 주차</option></select>
+      <input class="search-input" type="text" placeholder="지점 검색..." id="google-search" oninput="renderGoogle()">
+    </div>
+    <div class="summary-cards" id="google-summary"></div>
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-title">구글 후기 현황</span><span class="table-count" id="google-count">-</span></div>
+      <div class="table-container"><div id="google-table"></div></div>
+      <div class="pagination" id="google-pagination"></div>
+    </div>
+  </div>
+  <div id="tab-tripadvisor" style="display:none">
+    <div class="filters">
+      <span class="filter-label">지점</span>
+      <select id="trip-branch" onchange="renderTrip()"><option value="">전체 지점</option></select>
+      <span class="filter-label">주차</span>
+      <select id="trip-period" onchange="renderTrip()"><option value="">전체 주차</option></select>
+      <input class="search-input" type="text" placeholder="지점 검색..." id="trip-search" oninput="renderTrip()">
+    </div>
+    <div class="summary-cards" id="trip-summary"></div>
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-title">트립어드바이저 후기 현황</span><span class="table-count" id="trip-count">-</span></div>
+      <div class="table-container"><div id="trip-table"></div></div>
+      <div class="pagination" id="trip-pagination"></div>
+    </div>
+  </div>
+  <div id="tab-ota" style="display:none">
+    <div class="filters">
+      <span class="filter-label">플랫폼</span>
+      <select id="ota-platform" onchange="renderOta()"><option value="">전체 플랫폼</option></select>
+      <span class="filter-label">주차</span>
+      <select id="ota-period" onchange="renderOta()"><option value="">전체 주차</option></select>
+    </div>
+    <div class="summary-cards" id="ota-summary"></div>
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-title">OTA 플랫폼별 점수</span><span class="table-count" id="ota-count">-</span></div>
+      <div class="table-container"><div id="ota-table"></div></div>
+      <div class="pagination" id="ota-pagination"></div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">지점 상세</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbxlLEEMdDhciULkGjubEqIscc4WA2CpU_ba3NPvLOruYCC8x-Q8xA6xJlv5ux5d803gpA/exec';
+let googleData = [], tripData = [], otaData = [];
+let googlePage = 1, tripPage = 1, otaPage = 1;
+const PAGE_SIZE = 50;
+
+async function loadAll() {
+  showLoading('google-table'); showLoading('trip-table'); showLoading('ota-table');
+  try {
+    const [g, t, o] = await Promise.all([
+      fetch(API + '?sheet=google').then(r => r.json()),
+      fetch(API + '?sheet=tripadvisor').then(r => r.json()),
+      fetch(API + '?sheet=ota').then(r => r.json())
+    ]);
+    googleData = g; tripData = t; otaData = o;
+    initFilters(); renderGoogle(); renderTrip(); renderOta();
+    document.getElementById('lastUpdated').textContent = '업데이트: ' + new Date().toLocaleString('ko-KR');
+  } catch(e) {
+    document.getElementById('lastUpdated').textContent = '데이터 로드 실패';
+  }
+}
+
+function showLoading(id) {
+  document.getElementById(id).innerHTML = `<div class="loading"><div class="spinner"></div><span>데이터 불러오는 중...</span></div>`;
+}
+
+function initFilters() {
+  const gBranches = [...new Set(googleData.map(d => d.지점))].sort();
+  const gBranchSel = document.getElementById('google-branch');
+  gBranches.forEach(b => gBranchSel.add(new Option(b, b)));
+  const gPeriods = [...new Set(googleData.map(d => d.주차))];
+  const gPeriodSel = document.getElementById('google-period');
+  gPeriods.forEach(p => gPeriodSel.add(new Option(p, p)));
+  gPeriodSel.value = gPeriods[gPeriods.length - 1] || '';
+
+  const tBranches = [...new Set(tripData.map(d => d.지점))].sort();
+  const tBranchSel = document.getElementById('trip-branch');
+  tBranches.forEach(b => tBranchSel.add(new Option(b, b)));
+  const tPeriods = [...new Set(tripData.map(d => d.주차))];
+  const tPeriodSel = document.getElementById('trip-period');
+  tPeriods.forEach(p => tPeriodSel.add(new Option(p, p)));
+  tPeriodSel.value = tPeriods[tPeriods.length - 1] || '';
+
+  const platforms = [...new Set(otaData.map(d => d.OTA))].sort();
+  const pSel = document.getElementById('ota-platform');
+  platforms.forEach(p => pSel.add(new Option(p, p)));
+  const oPeriods = [...new Set(otaData.map(d => d.주차))];
+  const oPeriodSel = document.getElementById('ota-period');
+  oPeriods.forEach(p => oPeriodSel.add(new Option(p, p)));
+  oPeriodSel.value = oPeriods[oPeriods.length - 1] || '';
+}
+
+function switchTab(tab) {
+  ['google','tripadvisor','ota'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = t === tab ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', ['google','tripadvisor','ota'][i] === tab);
+  });
+}
+
+function ratingClass(r) {
+  if (r >= 4.5) return 'rating-high';
+  if (r >= 4.0) return 'rating-mid';
+  return 'rating-low';
+}
+
+function stars(r) {
+  const full = Math.floor(r);
+  const half = r % 1 >= 0.5 ? 1 : 0;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - half);
+}
+
+function diffBadge(d) {
+  if (d > 0) return `<span class="up">▲${d}</span>`;
+  if (d < 0) return `<span class="down">▼${Math.abs(d)}</span>`;
+  return `<span class="neutral">-</span>`;
+}
+
+function renderPagination(containerId, page, total, setPage) {
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const el = document.getElementById(containerId);
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = `<button class="page-btn" onclick="${setPage}(${page-1})" ${page===1?'disabled':''}>◀</button><span class="page-info">${page} / ${totalPages}</span><button class="page-btn" onclick="${setPage}(${page+1})" ${page===totalPages?'disabled':''}>▶</button>`;
+}
+
+function renderGoogle(page) {
+  if (page) googlePage = page;
+  const branch = document.getElementById('google-branch').value;
+  const period = document.getElementById('google-period').value;
+  const search = document.getElementById('google-search').value.toLowerCase();
+  let filtered = googleData.filter(d => {
+    if (branch && d.지점 !== branch) return false;
+    if (period && d.주차 !== period) return false;
+    if (search && !d.지점.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const latestPeriod = period || [...new Set(filtered.map(d => d.주차))].pop();
+  const latestData = filtered.filter(d => d.주차 === latestPeriod);
+  const avgRating = latestData.length ? (latestData.reduce((s,d) => s + d.평점, 0) / latestData.length).toFixed(2) : '-';
+  const totalReviews = latestData.reduce((s,d) => s + d.후기갯수, 0);
+  const totalIncrease = latestData.reduce((s,d) => s + d.증감, 0);
+  document.getElementById('google-summary').innerHTML = `
+    <div class="summary-card"><div class="label">평균 평점</div><div class="value">${avgRating}</div><div class="sub">최신 주차 기준</div></div>
+    <div class="summary-card"><div class="label">총 후기 수</div><div class="value">${totalReviews.toLocaleString()}</div><div class="sub">최신 주차 기준</div></div>
+    <div class="summary-card"><div class="label">이번 주 증감</div><div class="value" style="color:${totalIncrease>0?'var(--green)':totalIncrease<0?'var(--red)':'var(--text2)'}">${totalIncrease>0?'+':''}${totalIncrease}</div><div class="sub">전주 대비</div></div>
+    <div class="summary-card"><div class="label">조회 지점 수</div><div class="value">${latestData.length}</div><div class="sub">현재 필터 기준</div></div>`;
+  document.getElementById('google-count').textContent = `${filtered.length}건`;
+  const paged = filtered.slice((googlePage-1)*PAGE_SIZE, googlePage*PAGE_SIZE);
+  if (!paged.length) { document.getElementById('google-table').innerHTML = '<div class="empty">데이터가 없어요</div>'; return; }
+  let html = `<table><thead><tr><th>지점</th><th>주차</th><th>후기갯수</th><th>증감</th><th>평점</th><th>별점</th></tr></thead><tbody>`;
+  paged.forEach(d => {
+    html += `<tr class="clickable" onclick="openBranchModal('${d.지점}','google')"><td>${d.지점}</td><td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text2)">${d.주차}</td><td>${d.후기갯수.toLocaleString()}</td><td>${diffBadge(d.증감)}</td><td class="${ratingClass(d.평점)}">${d.평점}</td><td><span class="stars">${stars(d.평점)}</span></td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('google-table').innerHTML = html;
+  renderPagination('google-pagination', googlePage, filtered.length, 'renderGoogle');
+}
+
+function renderTrip(page) {
+  if (page) tripPage = page;
+  const branch = document.getElementById('trip-branch').value;
+  const period = document.getElementById('trip-period').value;
+  const search = document.getElementById('trip-search').value.toLowerCase
