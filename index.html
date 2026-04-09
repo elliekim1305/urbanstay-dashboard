@@ -228,9 +228,10 @@ function renderBranch(){
   const tPeriods=[...new Set(tripData.filter(d=>d.지점===b).map(d=>d.주차))];
   const tLatest=tPeriods[tPeriods.length-1]||'';
   const curT=tripData.find(d=>d.지점===b&&d.주차===tLatest);
-  const otaPeriods=[...new Set(otaData.filter(d=>d.지점===b).map(d=>d.주차))];
+  const bShort=b.replace(/^\d+\./,'').trim();
+  const otaPeriods=[...new Set(otaData.filter(d=>d.지점===bShort).map(d=>d.주차))];
   const otaLatest=otaPeriods[otaPeriods.length-1]||'';
-  const otaBranch=otaData.filter(d=>d.지점===b&&d.주차===otaLatest);
+  const otaBranch=otaData.filter(d=>d.지점===bShort&&d.주차===otaLatest);
   const gScore=curG?curG.평점:0;
   const gInc=curG?curG.증감:0;
   const tScore=curT?curT.평점:0;
