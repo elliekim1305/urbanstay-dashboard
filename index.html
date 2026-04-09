@@ -246,8 +246,7 @@ function renderBranch(){
   document.getElementById('mainContent').innerHTML=`
     <div class="summary-row">
 <div class="stat-card"><div class="stat-label">구글 평점</div><div class="stat-value" style="color:${scoreColor(gScore*2)}">${gScore?+(gScore*2).toFixed(1):'-'}</div><div class="stat-sub"><span class="${gInc>=0?'up':'down'}">${gInc>=0?'▲':'▼'}${Math.abs(gInc)}</span> 원점수 ${gScore}/5</div></div>      <div class="stat-card"><div class="stat-label">관리 채널 수</div><div class="stat-value">${channelCards.length}</div><div class="stat-sub">OTA+구글+트립</div></div>
-      <div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tScore*2)}">${tScore||'-'}</div><div class="stat-sub">5점 만점</div></div>
-      <div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:${scoreColor(otaAvgBranch)}">${otaAvgBranch?otaAvgBranch.toFixed(2):'-'}</div><div class="stat-sub">10점 만점</div></div>
+<div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tScore*2)}">${tScore?+(tScore*2).toFixed(1):'-'}</div><div class="stat-sub">원점수 ${tScore}/5</div></div>      <div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:${scoreColor(otaAvgBranch)}">${otaAvgBranch?otaAvgBranch.toFixed(2):'-'}</div><div class="stat-sub">10점 만점</div></div>
     </div>
     <div style="margin-bottom:8px;font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">채널별 평점 (10점 만점 환산)</div>
     <div class="channel-grid">
