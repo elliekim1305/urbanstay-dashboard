@@ -236,10 +236,10 @@ function renderBranch(){
   const gInc=curG?curG.증감:0;
   const tScore=curT?curT.평점:0;
   const gReviews=curG?curG.후기갯수:0;
-  const channelCards=[
+ const channelCards=[
     ...otaBranch.map(d=>({name:d.OTA,score:d.환산점수,sub:`리뷰 ${d.리뷰갯수.toLocaleString()}개`,max:10})),
-    {name:'구글',score:gScore,sub:`후기 ${gReviews.toLocaleString()}개`,max:5},
-    {name:'트립어드바이저',score:tScore,sub:`후기 ${curT?curT.후기갯수:0}개`,max:5}
+    {name:'구글',score:gScore?+(gScore*2).toFixed(2):0,sub:`원점수 ${gScore}/5`,max:10},
+    {name:'트립어드바이저',score:tScore?+(tScore*2).toFixed(2):0,sub:`원점수 ${tScore}/5`,max:10}
   ];
   const gTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.평점:null;});
   const gIncTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
@@ -247,8 +247,7 @@ function renderBranch(){
   document.getElementById('mainContent').innerHTML=`
     <div class="summary-row">
       <div class="stat-card"><div class="stat-label">구글 평점</div><div class="stat-value" style="color:${scoreColor(gScore)}">${gScore||'-'}</div><div class="stat-sub"><span class="${gInc>=0?'up':'down'}">${gInc>=0?'▲':'▼'}${Math.abs(gInc)}</span> 전주 대비</div></div>
-      <div class="stat-card"><div class="stat-label">구글 후기 수</div><div class="stat-value">${gReviews.toLocaleString()}</div><div class="stat-sub">누적 기준</div></div>
-      <div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tScore)}">${tScore||'-'}</div><div class="stat-sub">5점 만점</div></div>
+      <div class="stat-card"><div class="stat-label">관리 채널 수</div><div class="stat-value">${channelCards.length}</div><div class="stat-sub">OTA+구글+트립</div></div>      <div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tScore)}">${tScore||'-'}</div><div class="stat-sub">5점 만점</div></div>
       <div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:${otaScoreColor(otaBranch.length?otaBranch.reduce((s,d)=>s+d.환산점수,0)/otaBranch.length:0)}">${otaBranch.length?(otaBranch.reduce((s,d)=>s+d.환산점수,0)/otaBranch.length).toFixed(2):'-'}</div><div class="stat-sub">10점 만점</div></div>
     </div>
     <div style="margin-bottom:8px;font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">채널별 평점</div>
