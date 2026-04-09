@@ -117,10 +117,10 @@ async function loadAll(){
 }
 
 function initPeriods(){
-  const periods=[...new Set(otaData.map(d=>d.주차))];
+  const gPeriods=[...new Set(googleData.map(d=>d.주차))];
   const sel=document.getElementById('periodSelect');
-  periods.forEach(p=>sel.add(new Option(p,p)));
-  currentPeriod=periods[periods.length-1]||'';
+  gPeriods.forEach(p=>sel.add(new Option(p,p)));
+  currentPeriod=gPeriods[gPeriods.length-1]||'';
   sel.value=currentPeriod;
 }
 
@@ -152,7 +152,7 @@ function scoreColor(s){
 
 function renderOverall(){
   const pd=otaData.filter(d=>d.주차===currentPeriod);
-  const periods=[...new Set(otaData.map(d=>d.주차))];
+  const periods=[...new Set(googleData.map(d=>d.주차))];
   const prevP=periods[periods.indexOf(currentPeriod)-1]||'';
   const channels=[...new Set(otaData.map(d=>d.OTA))].filter(c=>!['합계','채널'].includes(c));
   const chScores=channels.map(c=>{
