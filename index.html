@@ -227,8 +227,8 @@ function renderBranch(){
   const curG=gRows.find(d=>d.주차===currentPeriod);
   const tPeriods=[...new Set(tripData.filter(d=>d.지점===b).map(d=>d.주차))];
   const tLatest=tPeriods[tPeriods.length-1]||'';
-  const curT=tripData.find(d=>d.지점===b&&d.주차===tLatest);
   const bShort=b.replace(/^\d+\./,'').trim();
+  const curT=tripData.find(d=>d.지점===bShort&&d.주차===tLatest);
   const otaPeriods=[...new Set(otaData.filter(d=>d.지점===bShort).map(d=>d.주차))];
   const otaLatest=otaPeriods[otaPeriods.length-1]||'';
   const otaBranch=otaData.filter(d=>d.지점===bShort&&d.주차===otaLatest);
