@@ -274,8 +274,7 @@ function renderOverall(){
       <div class="stat-card"><div class="stat-label">이번 주 증감</div><div class="stat-value" style="color:${gInc>=0?'var(--green)':'var(--red)'}">${gInc>=0?'+':''}${gInc}</div><div class="stat-sub">전주 대비 구글 후기</div></div>
     </div>
 
-    ${gWarn.length||otaWarn.length?`
-    <div class="alert-grid">
+  
       ${gWarn.length?`<div class="alert-card">
         <div class="alert-title">⚠ 구글 평점 주의 (4.0 미만)</div>
         ${gWarn.map(b=>`<div class="alert-item" onclick="selectBranchByName('${b.name}')">
