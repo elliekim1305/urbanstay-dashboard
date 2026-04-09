@@ -124,6 +124,22 @@ function initPeriods(){
 }
 
 const EXCLUDED=['03.동탄','09.여수'];
+  const OTA_MAP={
+  '02.서면':'서면','03.동탄':'동탄','04.명동':'명동',
+  '05.제주공항':'제주공항','06.부산역':'부산역',
+  '07.송도달빛공원':'송달공','08.속초해변C':'속초C',
+  '09.여수':'여수','10.등대해변':'속초등대',
+  '11.부산시청':'부산시청','12.부산기장':'부산기장',
+  '13.남포BIFF':'남포','14.울산':'울산',
+  '15.시그니티':'시그니티','17.익선':'익선',
+  '18.웨이브파크':'웨이브파크','19.부산송도해변':'부송해',
+  '20.로이움':'로이움','21.당진터미널':'당진',
+  '22.속초해변AB':'속초AB','23.인천차이나타운':'인차타',
+  '24.해운대패러그라프':'패러그라프','25.거북섬':'거북섬',
+  '26.해운대역':'해운대역','27.낙산해변':'낙산',
+  '28.속초해변':'르컬속초','29.속초중앙':'르컬중앙',
+  '30.호텔 동탄':'동탄(호텔)','31.속초자이엘라':'속초자이엘라'
+};
 function initBranchMenu(){
   const branches=[...new Set(googleData.map(d=>d.지점))].filter(b=>!EXCLUDED.includes(b)).sort();
   document.getElementById('branchMenu').innerHTML=branches.map(b=>
@@ -215,7 +231,7 @@ function renderOverall(){
 
 function renderBranch(){
   const b=currentBranch;
-  const bShort=b.replace(/^\d+\./,'').trim();
+  const bShort=OTA_MAP[b]||b.replace(/^\d+\./,'').trim();
   const gRows=googleData.filter(d=>d.지점===b);
   const periods=[...new Set(gRows.map(d=>d.주차))];
   const recent=periods.slice(-16);
