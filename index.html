@@ -123,8 +123,9 @@ function initPeriods(){
   sel.value=currentPeriod;
 }
 
+const EXCLUDED=['03.동탄','09.여수'];
 function initBranchMenu(){
-  const branches=[...new Set(googleData.map(d=>d.지점))].sort();
+  const branches=[...new Set(googleData.map(d=>d.지점))].filter(b=>!EXCLUDED.includes(b)).sort();
   document.getElementById('branchMenu').innerHTML=branches.map(b=>
     `<div class="menu-item" onclick="selectBranch('${b}',this)">${b}</div>`
   ).join('');
