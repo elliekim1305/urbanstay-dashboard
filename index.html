@@ -151,9 +151,17 @@ function scoreColor(s){
 }
 
 function renderOverall(){
-  const pd=otaData.filter(d=>d.주차===currentPeriod);
-  const periods=[...new Set(googleData.map(d=>d.주차))];
-  const prevP=periods[periods.indexOf(currentPeriod)-1]||'';
+  // 각 데이터 소스의 최신 주차를 독립적으로 사용
+  const gPeriods=[...new Set(googleData.map(d=>d.주차))];
+  const otaPeriods=[...new Set(otaData.map(d=>d.주차))];
+  const tPeriods=[...new Set(tripData.map(d=>d.주차))];
+
+  const otaLatest=otaPeriods[otaPeriods.length-1]||'';
+  const tLatest=tPeriods[tPeriods.length-1]||'';
+  const prevP=gPeriods[gPeriods.indexOf(currentPeriod)-1]||'';
+
+  // OTA 데이터 (OTA 자체 최신 주차 기준)
+  const pd=otaData.filter(d=>d.주차===otaLatest);
   const channels=[...new Set(otaData.map(d=>d.OTA))].filter(c=>!['합계','채널'].includes(c));
   const chScores=channels.map(c=>{
     const rows=pd.filter(d=>d.OTA===c);
@@ -161,24 +169,40 @@ function renderOverall(){
   }).filter(c=>c.score>0);
   const avgOTA=chScores.length?chScores.reduce((s,c)=>s+c.score,0)/chScores.length:0;
   const totalRev=chScores.reduce((s,c)=>s+c.reviews,0);
+
+  // 구글 데이터 (구글 주차 기준)
   const gCur=googleData.filter(d=>d.주차===currentPeriod);
   const gAvg=gCur.length?gCur.reduce((s,d)=>s+d.평점,0)/gCur.length:0;
   const gInc=gCur.reduce((s,d)=>s+d.증감,0);
-  const tCur=tripData.filter(d=>d.주차===currentPeriod&&d.후기갯수>0);
+
+  // 트립 데이터 (트립 자체 최신 주차 기준)
+  const tCur=tripData.filter(d=>d.주차===tLatest&&d.후기갯수>0);
   const tAvg=tCur.length?tCur.reduce((s,d)=>s+d.평점,0)/tCur.length:0;
-  const tp=periods.slice(-16);
+
+  // 그래프용: OTA 주차 기준 최근 16주
+  const tp=otaPeriods.slice(-16);
   const trendCh=['야놀자','여기어때','에어비앤비'];
   const tColors=['#5b8dee','#3ecf8e','#f5a623'];
   const datasets=trendCh.map((ch,i)=>({
-    label:ch,data:tp.map(p=>{const r=otaData.filter(d=>d.주차===p&&d.OTA===ch);return r.length?+(r.reduce((s,d)=>s+d.환산점수,0)/r.length).toFixed(3):null;}),
+    label:ch,
+    data:tp.map(p=>{
+      const r=otaData.filter(d=>d.주차===p&&d.OTA===ch);
+      return r.length?+(r.reduce((s,d)=>s+d.환산점수,0)/r.length).toFixed(3):null;
+    }),
     borderColor:tColors[i],backgroundColor:tColors[i]+'20',tension:0.3,pointRadius:3,borderWidth:2,fill:false,spanGaps:true
   }));
-  const incTrend=tp.map(p=>googleData.filter(d=>d.주차===p).reduce((s,d)=>s+d.증감,0));
+
+  // 구글 증감 추이 (구글 주차 기준 최근 16주)
+  const gp=gPeriods.slice(-16);
+  const incTrend=gp.map(p=>googleData.filter(d=>d.주차===p).reduce((s,d)=>s+d.증감,0));
+
+  // 지점 순위
   const branchRanks=[...new Set(googleData.map(d=>d.지점))].map(b=>{
     const c=googleData.find(d=>d.지점===b&&d.주차===currentPeriod);
     const pv=googleData.find(d=>d.지점===b&&d.주차===prevP);
     return{name:b,score:c?c.평점:0,diff:c&&pv?+(c.평점-pv.평점).toFixed(2):0};
   }).filter(b=>b.score>0).sort((a,b)=>b.score-a.score);
+
   const maxS=Math.max(...branchRanks.map(b=>b.score),5);
   const chColors={'야놀자':'#5b8dee','여기어때':'#3ecf8e','에어비앤비':'#f5a623','부킹닷컴':'#f06565','아고다':'#a78bfa','트립닷컴':'#34d3d3','익스피디아':'#f0804a'};
 
@@ -223,7 +247,7 @@ function renderOverall(){
       <div class="chart-card">
         <div class="chart-title">주간 구글 후기 증감 추이</div>
         <div class="increase-list">
-          ${tp.map((p,i)=>{const v=incTrend[i];const mx=Math.max(...incTrend.map(Math.abs),1);return`<div class="increase-item"><div class="increase-label">${p.split('.').slice(1).join('/')}</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:${(Math.abs(v)/mx*100).toFixed(0)}%;background:${v>=0?'var(--green)':'var(--red)'}"></div></div><div class="increase-val" style="color:${v>=0?'var(--green)':'var(--red)'}">${v>=0?'+':''}${v}</div></div>`;}).join('')}
+          ${gp.map((p,i)=>{const v=incTrend[i];const mx=Math.max(...incTrend.map(Math.abs),1);return`<div class="increase-item"><div class="increase-label">${p.split('~')[0].trim().split('.').slice(1).join('/')}</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:${(Math.abs(v)/mx*100).toFixed(0)}%;background:${v>=0?'var(--green)':'var(--red)'}"></div></div><div class="increase-val" style="color:${v>=0?'var(--green)':'var(--red)'}">${v>=0?'+':''}${v}</div></div>`;}).join('')}
         </div>
       </div>
     </div>`;
@@ -232,7 +256,7 @@ function renderOverall(){
     if(trendChart)trendChart.destroy();
     const ctx=document.getElementById('trendChart');
     if(!ctx)return;
-    trendChart=new Chart(ctx,{type:'line',data:{labels:tp.map(p=>p.split('.').slice(1).join('/')),datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f8ba8',font:{size:10},maxRotation:45},grid:{color:'#252a3d'}},y:{ticks:{color:'#7f8ba8',font:{size:10}},grid:{color:'#252a3d'},min:8,max:10}}}});
+    trendChart=new Chart(ctx,{type:'line',data:{labels:tp.map(p=>p.split('.').slice(1).join('.')),datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f8ba8',font:{size:10},maxRotation:45},grid:{color:'#252a3d'}},y:{ticks:{color:'#7f8ba8',font:{size:10}},grid:{color:'#252a3d'},min:8,max:10}}}});
   },50);
 }
 
@@ -266,7 +290,7 @@ function renderBranch(){
       <div class="chart-card">
         <div class="chart-title">주간 후기 증감</div>
         <div class="increase-list">
-          ${recent.map((p,i)=>{const v=gIncTrend[i];const mx=Math.max(...gIncTrend.map(Math.abs),1);return`<div class="increase-item"><div class="increase-label">${p.split('.').slice(1).join('/')}</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:${(Math.abs(v)/mx*100).toFixed(0)}%;background:${v>=0?'var(--green)':'var(--red)'}"></div></div><div class="increase-val" style="color:${v>=0?'var(--green)':'var(--red)'}">${v>=0?'+':''}${v}</div></div>`;}).join('')}
+          ${recent.map((p,i)=>{const v=gIncTrend[i];const mx=Math.max(...gIncTrend.map(Math.abs),1);return`<div class="increase-item"><div class="increase-label">${p.split('~')[0].trim().split('.').slice(1).join('/')}</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:${(Math.abs(v)/mx*100).toFixed(0)}%;background:${v>=0?'var(--green)':'var(--red)'}"></div></div><div class="increase-val" style="color:${v>=0?'var(--green)':'var(--red)'}">${v>=0?'+':''}${v}</div></div>`;}).join('')}
         </div>
       </div>
     </div>
@@ -286,7 +310,7 @@ function renderBranch(){
     if(trendChart)trendChart.destroy();
     const ctx=document.getElementById('trendChart');
     if(!ctx)return;
-    trendChart=new Chart(ctx,{type:'line',data:{labels:recent.map(p=>p.split('.').slice(1).join('/')),datasets:[{label:'구글 평점',data:gTrend,borderColor:'#5b8dee',backgroundColor:'#5b8dee20',tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f8ba8',font:{size:10},maxRotation:45},grid:{color:'#252a3d'}},y:{ticks:{color:'#7f8ba8',font:{size:10}},grid:{color:'#252a3d'},min:1,max:5}}}});
+    trendChart=new Chart(ctx,{type:'line',data:{labels:recent.map(p=>p.split('~')[0].trim().split('.').slice(1).join('/')),datasets:[{label:'구글 평점',data:gTrend,borderColor:'#5b8dee',backgroundColor:'#5b8dee20',tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f8ba8',font:{size:10},maxRotation:45},grid:{color:'#252a3d'}},y:{ticks:{color:'#7f8ba8',font:{size:10}},grid:{color:'#252a3d'},min:1,max:5}}}});
   },50);
 }
 
