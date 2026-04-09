@@ -193,8 +193,12 @@ function renderOverall(){
   const incTrend=gp.map(p=>googleData.filter(d=>d.주차===p).reduce((s,d)=>s+d.증감,0));
 
   document.getElementById('mainContent').innerHTML=`
+    const gAvg10=gAvg*2;
+    const tAvg10=tAvg*2;
+    const totalAvg=((otaAvg+gAvg10+tAvg10)/3).toFixed(2);
+  document.getElementById('mainContent').innerHTML=`
     <div class="summary-row">
-      <div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:${otaScoreColor(otaAvg)}">${otaAvg.toFixed(2)}</div><div class="stat-sub">10점 만점 기준</div></div>
+      <div class="stat-card"><div class="stat-label">전체 통합 점수</div><div class="stat-value" style="color:${otaScoreColor(totalAvg)}">${totalAvg}</div><div class="stat-sub">OTA+구글+트립 평균 (10점 만점)</div></div>
       <div class="stat-card"><div class="stat-label">총 리뷰 수</div><div class="stat-value">${(totalRev/1000).toFixed(1)}K</div><div class="stat-sub">OTA 전체 합산</div></div>
       <div class="stat-card"><div class="stat-label">구글 평균 평점</div><div class="stat-value" style="color:${scoreColor(gAvg)}">${gAvg.toFixed(2)}</div><div class="stat-sub"><span class="${gInc>=0?'up':'down'}">${gInc>=0?'▲':'▼'}${Math.abs(gInc)}</span> 전주 대비 증감</div></div>
       <div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tAvg)}">${tAvg.toFixed(2)}</div><div class="stat-sub">5점 만점 기준</div></div>
