@@ -274,23 +274,6 @@ function renderOverall(){
       <div class="stat-card"><div class="stat-label">이번 주 증감</div><div class="stat-value" style="color:${gInc>=0?'var(--green)':'var(--red)'}">${gInc>=0?'+':''}${gInc}</div><div class="stat-sub">전주 대비 구글 후기</div></div>
     </div>
 
-  
-      ${gWarn.length?`<div class="alert-card">
-        <div class="alert-title">⚠ 구글 평점 주의 (4.0 미만)</div>
-        ${gWarn.map(b=>`<div class="alert-item" onclick="selectBranchByName('${b.name}')">
-          <div class="alert-name">${b.name.replace(/^\d+\./,'')}</div>
-          <div class="alert-score">${b.score}</div>
-        </div>`).join('')}
-      </div>`:''}
-      ${otaWarn.length?`<div class="alert-card">
-        <div class="alert-title">⚠ OTA 점수 주의 (8.5 미만)</div>
-        ${otaWarn.map(b=>`<div class="alert-item" onclick="selectBranchByName('${b.name}')">
-          <div class="alert-name">${b.name.replace(/^\d+\./,'')}</div>
-          <div class="alert-score">${b.score}</div>
-        </div>`).join('')}
-      </div>`:''}
-    </div>`:''}
-
     <div class="charts-row">
       <div class="chart-card">
         <div class="chart-title">주간 구글 후기 증감 추이 (최근 16주)</div>
