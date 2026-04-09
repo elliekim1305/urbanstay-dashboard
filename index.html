@@ -98,7 +98,6 @@ const API='https://script.google.com/macros/s/AKfycbxlLEEMdDhciULkGjubEqIscc4WA2
 let otaData=[],googleData=[],tripData=[];
 let currentBranch=null,currentPeriod='';
 let trendChart=null;
-const chColors={'야놀자':'#5b8dee','여기어때':'#3ecf8e','에어비앤비':'#f5a623','부킹닷컴':'#f06565','아고다':'#a78bfa','트립닷컴':'#34d3d3','익스피디아':'#f0804a','구글':'#ea4335','트립어드바이저':'#00af87'};
 
 async function loadAll(){
   try{
@@ -144,10 +143,8 @@ function selectBranch(branch,el){
 function render(){currentBranch?renderBranch():renderOverall();}
 
 function scoreColor(s){
-  if(s>=9)return'#3ecf8e';
-  if(s>=8)return'#5b8dee';
   if(s>=4.5)return'#3ecf8e';
-  if(s>=4)return'#5b8dee';
+  if(s>=4.0)return'#5b8dee';
   if(s>=3.5)return'#f5a623';
   return'#f06565';
 }
@@ -166,21 +163,22 @@ function renderOverall(){
   const tLatest=tPeriods[tPeriods.length-1]||'';
   const prevP=gPeriods[gPeriods.indexOf(currentPeriod)-1]||'';
 
-  // OTA 전체 평균 (최신 주차, 합계 행 사용)
   const otaLatestRows=otaData.filter(d=>d.주차===otaLatest);
   const otaAvg=otaLatestRows.length?otaLatestRows.reduce((s,d)=>s+d.환산점수,0)/otaLatestRows.length:0;
   const totalRev=otaLatestRows.reduce((s,d)=>s+d.리뷰갯수,0);
 
-  // 구글
   const gCur=googleData.filter(d=>d.주차===currentPeriod);
   const gAvg=gCur.length?gCur.reduce((s,d)=>s+d.평점,0)/gCur.length:0;
   const gInc=gCur.reduce((s,d)=>s+d.증감,0);
 
-  // 트립
   const tCur=tripData.filter(d=>d.주차===tLatest&&d.후기갯수>0);
   const tAvg=tCur.length?tCur.reduce((s,d)=>s+d.평점,0)/tCur.length:0;
 
-  // 구글 지점 순위
+  // 통합 점수 (10점 만점으로 환산)
+  const gAvg10=gAvg*2;
+  const tAvg10=tAvg*2;
+  const totalAvg=((otaAvg+gAvg10+tAvg10)/3).toFixed(2);
+
   const branchRanks=[...new Set(googleData.map(d=>d.지점))].map(b=>{
     const c=googleData.find(d=>d.지점===b&&d.주차===currentPeriod);
     const pv=googleData.find(d=>d.지점===b&&d.주차===prevP);
@@ -188,14 +186,9 @@ function renderOverall(){
   }).filter(b=>b.score>0).sort((a,b)=>b.score-a.score);
   const maxS=Math.max(...branchRanks.map(b=>b.score),5);
 
-  // OTA 추이 그래프
   const gp=gPeriods.slice(-16);
   const incTrend=gp.map(p=>googleData.filter(d=>d.주차===p).reduce((s,d)=>s+d.증감,0));
 
-  document.getElementById('mainContent').innerHTML=`
-    const gAvg10=gAvg*2;
-    const tAvg10=tAvg*2;
-    const totalAvg=((otaAvg+gAvg10+tAvg10)/3).toFixed(2);
   document.getElementById('mainContent').innerHTML=`
     <div class="summary-row">
       <div class="stat-card"><div class="stat-label">전체 통합 점수</div><div class="stat-value" style="color:${otaScoreColor(totalAvg)}">${totalAvg}</div><div class="stat-sub">OTA+구글+트립 평균 (10점 만점)</div></div>
@@ -231,34 +224,22 @@ function renderBranch(){
   const gRows=googleData.filter(d=>d.지점===b);
   const periods=[...new Set(gRows.map(d=>d.주차))];
   const recent=periods.slice(-16);
-
   const curG=gRows.find(d=>d.주차===currentPeriod);
-  const prevP=periods[periods.indexOf(currentPeriod)-1]||'';
-  const prevG=gRows.find(d=>d.주차===prevP);
-
-  // 트립 최신 주차
   const tPeriods=[...new Set(tripData.filter(d=>d.지점===b).map(d=>d.주차))];
   const tLatest=tPeriods[tPeriods.length-1]||'';
   const curT=tripData.find(d=>d.지점===b&&d.주차===tLatest);
-
-  // OTA 채널별 최신 점수
   const otaPeriods=[...new Set(otaData.filter(d=>d.지점===b).map(d=>d.주차))];
   const otaLatest=otaPeriods[otaPeriods.length-1]||'';
   const otaBranch=otaData.filter(d=>d.지점===b&&d.주차===otaLatest);
-
   const gScore=curG?curG.평점:0;
   const gInc=curG?curG.증감:0;
   const tScore=curT?curT.평점:0;
   const gReviews=curG?curG.후기갯수:0;
-
-  // 채널 카드 데이터
   const channelCards=[
     ...otaBranch.map(d=>({name:d.OTA,score:d.환산점수,sub:`리뷰 ${d.리뷰갯수.toLocaleString()}개`,max:10})),
     {name:'구글',score:gScore,sub:`후기 ${gReviews.toLocaleString()}개`,max:5},
     {name:'트립어드바이저',score:tScore,sub:`후기 ${curT?curT.후기갯수:0}개`,max:5}
   ];
-
-  // 구글 평점 추이
   const gTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.평점:null;});
   const gIncTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
 
@@ -269,7 +250,6 @@ function renderBranch(){
       <div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tScore)}">${tScore||'-'}</div><div class="stat-sub">5점 만점</div></div>
       <div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:${otaScoreColor(otaBranch.length?otaBranch.reduce((s,d)=>s+d.환산점수,0)/otaBranch.length:0)}">${otaBranch.length?(otaBranch.reduce((s,d)=>s+d.환산점수,0)/otaBranch.length).toFixed(2):'-'}</div><div class="stat-sub">10점 만점</div></div>
     </div>
-
     <div style="margin-bottom:8px;font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">채널별 평점</div>
     <div class="channel-grid">
       ${channelCards.map(c=>{
@@ -284,7 +264,6 @@ function renderBranch(){
         </div>`;
       }).join('')}
     </div>
-
     <div class="charts-row">
       <div class="chart-card">
         <div class="chart-title">구글 평점 추이 (최근 16주)</div>
@@ -297,7 +276,6 @@ function renderBranch(){
         </div>
       </div>
     </div>
-
     <div class="chart-card">
       <div class="chart-title">주차별 상세 데이터</div>
       <div style="overflow-x:auto;">
