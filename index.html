@@ -214,11 +214,15 @@ function getIntegratedScore(branchName,period,otaPeriods,tPeriods){
 // OTA 증감: 지점별 채널별로 이번주-전주 각각 계산 후 합산
 function calcOtaInc(curPeriod,prevPeriod){
   if(!curPeriod||!prevPeriod)return 0;
+  const otaPeriods=[...new Set(otaData.map(d=>d.주차))];
+  const otaC=closestPeriod(otaPeriods,curPeriod);
+  const otaPv=closestPeriod(otaPeriods,prevPeriod);
+  if(!otaC||!otaPv||otaC===otaPv)return 0;
   const keys=[...new Set(otaData.map(d=>d.지점+'|||'+d.OTA))];
   return Math.round(keys.reduce((sum,key)=>{
     const [bShort,ch]=key.split('|||');
-    const cur=otaData.find(d=>d.지점===bShort&&d.OTA===ch&&d.주차===curPeriod);
-    const prev=otaData.find(d=>d.지점===bShort&&d.OTA===ch&&d.주차===prevPeriod);
+    const cur=otaData.find(d=>d.지점===bShort&&d.OTA===ch&&d.주차===otaC);
+    const prev=otaData.find(d=>d.지점===bShort&&d.OTA===ch&&d.주차===otaPv);
     if(cur&&prev)return sum+(cur.리뷰갯수-prev.리뷰갯수);
     return sum;
   },0));
