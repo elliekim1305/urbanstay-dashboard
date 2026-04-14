@@ -187,8 +187,11 @@ function getOtaAvg(bShort,period,otaPeriods){
 function calcTotalIncrease(period,prevPeriod){
   const gInc=googleData.filter(d=>d.주차===period&&!EXCLUDED.includes(d.지점)).reduce((s,d)=>s+d.증감,0);
 const otaPeriodsAll=[...new Set(otaData.map(d=>d.주차))].sort((a,b)=>new Date(a.replace(/\./g,'-'))-new Date(b.replace(/\./g,'-')));
-  const otaPeriodsValid=otaPeriodsAll.filter(p=>otaData.filter(d=>d.주차===p&&d.리뷰갯수>0).length>0);
-  const otaCurTotal=otaData.filter(d=>d.주차===otaPeriodsValid[otaPeriodsValid.length-1]).reduce((s,d)=>s+d.리뷰갯수,0);
+const totalBranchCount=[...new Set(otaData.map(d=>d.지점))].length;
+  const otaPeriodsValid=otaPeriodsAll.filter(p=>{
+    const branchesWithData=[...new Set(otaData.filter(d=>d.주차===p&&d.리뷰갯수>0).map(d=>d.지점))].length;
+    return branchesWithData>=totalBranchCount*0.8;
+  });  const otaCurTotal=otaData.filter(d=>d.주차===otaPeriodsValid[otaPeriodsValid.length-1]).reduce((s,d)=>s+d.리뷰갯수,0);
   const otaPrevTotal=otaData.filter(d=>d.주차===(otaPeriodsValid[otaPeriodsValid.length-2]||'')).reduce((s,d)=>s+d.리뷰갯수,0);
   const otaInc=Math.round(otaCurTotal-otaPrevTotal);
   const tPeriods=[...new Set(tripData.map(d=>d.주차))];
@@ -202,8 +205,11 @@ function renderOverall(){
   const gPeriods=[...new Set(googleData.map(d=>d.주차))];
   const otaPeriods=[...new Set(otaData.map(d=>d.주차))];
   const tPeriods=[...new Set(tripData.map(d=>d.주차))];
-const otaPeriodsValid=[...otaPeriods].sort((a,b)=>new Date(a.replace(/\./g,'-'))-new Date(b.replace(/\./g,'-'))).filter(p=>otaData.filter(d=>d.주차===p&&d.리뷰갯수>0).length>0);
-  const otaLatest=otaPeriodsValid[otaPeriodsValid.length-1]||'';
+const totalBranchCount2=[...new Set(otaData.map(d=>d.지점))].length;
+  const otaPeriodsValid=[...otaPeriods].sort((a,b)=>new Date(a.replace(/\./g,'-'))-new Date(b.replace(/\./g,'-'))).filter(p=>{
+    const branchesWithData=[...new Set(otaData.filter(d=>d.주차===p&&d.리뷰갯수>0).map(d=>d.지점))].length;
+    return branchesWithData>=totalBranchCount2*0.8;
+  });  const otaLatest=otaPeriodsValid[otaPeriodsValid.length-1]||'';
   const tLatest=tPeriods[tPeriods.length-1]||'';
   const prevP=gPeriods[gPeriods.indexOf(currentPeriod)-1]||'';
 
