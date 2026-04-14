@@ -360,8 +360,18 @@ function renderBranch(){
     {name:'트립어드바이저',score:tScore?+(tScore*2).toFixed(2):0,sub:`원점수 ${tScore}/5`,max:10}
   ];
 
-  const gTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.평점:null;});
-  const gIncTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
+const gTrend=recent.map(p=>{
+  const g=gRows.find(d=>d.주차===p);
+  const otaP=[...new Set(otaData.filter(d=>d.지점===bShort).map(d=>d.주차))];
+  const otaClosest=otaP.reduce((a,c)=>Math.abs(new Date(c.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')))<Math.abs(new Date(a.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')))?c:a,otaP[0]||'');
+  const otaRows=otaData.filter(d=>d.지점===bShort&&d.주차===otaClosest);
+  const otaAvg=otaRows.length?otaRows.reduce((s,d)=>s+d.환산점수,0)/otaRows.length:0;
+  const tRow=tripData.find(d=>d.지점===b&&d.주차===p);
+  if(!g)return null;
+  const total=((otaAvg||0)+(g.평점*2)+(tRow?tRow.평점*2:g.평점*2))/3;
+  return+total.toFixed(2);
+});
+ const gIncTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
 
   document.getElementById('mainContent').innerHTML=`
     <div class="summary-row">
@@ -385,7 +395,7 @@ function renderBranch(){
     </div>
     <div class="charts-row">
       <div class="chart-card">
-        <div class="chart-title">구글 평점 추이 (최근 16주)</div>
+<div class="chart-title">통합 평점 추이 (최근 16주)</div>
         <div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div>
       </div>
       <div class="chart-card">
@@ -431,7 +441,7 @@ function renderBranch(){
     trendChart=new Chart(ctx,{
       type:'line',
       data:{labels:recent.map(p=>p.split('~')[0].trim().split('.').slice(1).join('/')),datasets:[{label:'구글 평점',data:gTrend,borderColor:'#ea4335',backgroundColor:'#ea433520',tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f8ba8',font:{size:10},maxRotation:45},grid:{color:'#252a3d'}},y:{ticks:{color:'#7f8ba8',font:{size:10}},grid:{color:'#252a3d'},min:1,max:5}}}
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f8ba8',font:{size:10},maxRotation:45},grid:{color:'#252a3d'}},y:{ticks:{color:'#7f8ba8',font:{size:10}},grid:{color:'#252a3d'},min:6,max:10}
     });
   },50);
 }
