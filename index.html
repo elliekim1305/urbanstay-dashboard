@@ -352,8 +352,9 @@ function renderBranch(){
     return+((otaAvg||0)+(g.평점*2)+(tRow?tRow.평점*2:g.평점*2)).toFixed(2)/3;
   });
 
-  const gIncTrend=recent.map((p,i)=>{
-    const r=gRows.find(d=>d.주차===p);
+const recent4=periods.slice(-4);
+  const gIncTrend=recent4.map((p,i)=>{
+  const r=gRows.find(d=>d.주차===p);
     const gI=r?r.증감:0;
     const prevP2=periods[periods.indexOf(p)-1]||'';
     const otaC=otaPeriods.length?otaPeriods.reduce((a,c)=>{const d1=Math.abs(new Date(c.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')));const d2=Math.abs(new Date(a.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')));return d1<d2?c:a;},otaPeriods[0]):'';
@@ -395,7 +396,7 @@ function renderBranch(){
   html+='<div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div></div>';
 
   html+='<div class="chart-card"><div class="chart-title">주간 통합 후기 증감</div><div class="increase-list">';
-  recent.forEach((p,i)=>{
+  recent4.forEach((p,i)=>{
     const v=gIncTrend[i];
     html+='<div class="increase-item"><div class="increase-label">'+p.split('~')[0].trim().split('.').slice(1).join('/')+'</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:'+(Math.abs(v)/mx*100).toFixed(0)+'%;background:'+(v>=0?'var(--green)':'var(--red)')+'"></div></div><div class="increase-val" style="color:'+(v>=0?'var(--green)':'var(--red)')+'">'+( v>=0?'+':'')+v+'</div></div>';
   });
