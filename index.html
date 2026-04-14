@@ -384,8 +384,8 @@ function renderBranch(){
   html+='<th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">통합 점수</th>';
   html+='</tr></thead><tbody>';
 
-  periods.slice(-16).slice().reverse().forEach(p=>{
-    const g=gRows.find(d=>d.주차===p);
+periods.slice(-4).slice().reverse().forEach(p=>{
+  const g=gRows.find(d=>d.주차===p);
     const t=tripData.find(d=>d.지점===b&&d.주차===p);
     const otaAvgP=getOtaAvg(bShort,p,otaPeriods);
     const gP=g?g.평점:0;
