@@ -241,13 +241,8 @@ function renderOverall(){
   const otaLatestRows=otaData.filter(d=>d.주차===otaLatest);
   const otaAvg=otaLatestRows.length?otaLatestRows.reduce((s,d)=>s+d.환산점수,0)/otaLatestRows.length:0;
 
-  // 총 리뷰수: 지점별 최신 주차 합산
-  const allBranchShorts=[...new Set(otaData.map(d=>d.지점))];
-  const totalRev=allBranchShorts.reduce((sum,bShort)=>{
-    const bPeriods=[...new Set(otaData.filter(d=>d.지점===bShort).map(d=>d.주차))];
-    const latest=bPeriods[bPeriods.length-1]||'';
-    return sum+otaData.filter(d=>d.지점===bShort&&d.주차===latest).reduce((s,d)=>s+d.리뷰갯수,0);
-  },0);
+ // 총 리뷰수: 전체 OTA 최신 주차 기준
+  const totalRev=otaData.filter(d=>d.주차===otaLatest).reduce((s,d)=>s+d.리뷰갯수,0);
 
   const gCur=googleData.filter(d=>d.주차===currentPeriod&&!EXCLUDED.includes(d.지점));
   const gAvg=gCur.length?gCur.reduce((s,d)=>s+d.평점,0)/gCur.length:0;
@@ -257,7 +252,10 @@ function renderOverall(){
 
   // 증감 계산
   const gInc=gCur.reduce((s,d)=>s+d.증감,0);
-  const otaInc=calcOtaInc(otaLatest,otaPrev);
+  const otaInc=Math.round(
+    otaData.filter(d=>d.주차===otaLatest).reduce((s,d)=>s+d.리뷰갯수,0)-
+    otaData.filter(d=>d.주차===otaPrev).reduce((s,d)=>s+d.리뷰갯수,0)
+  );
   const tInc=Math.round(
     tripData.filter(d=>d.주차===tLatest).reduce((s,d)=>s+d.후기갯수,0)-
     tripData.filter(d=>d.주차===tPrev).reduce((s,d)=>s+d.후기갯수,0)
