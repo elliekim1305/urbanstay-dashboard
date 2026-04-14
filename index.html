@@ -232,8 +232,10 @@ function renderOverall(){
   const gPeriods=[...new Set(googleData.map(d=>d.주차))];
   const otaPeriods=[...new Set(otaData.map(d=>d.주차))];
   const tPeriods=[...new Set(tripData.map(d=>d.주차))];
-  const otaLatest=otaPeriods[otaPeriods.length-1]||'';
-  const otaPrev=otaPeriods[otaPeriods.length-2]||'';
+  // 실제 데이터가 있는 최신 주차 찾기
+  const otaValidPeriods=otaPeriods.filter(p=>otaData.filter(d=>d.주차===p&&d.리뷰갯수>0).length>0);
+  const otaLatest=otaValidPeriods[otaValidPeriods.length-1]||'';
+  const otaPrev=otaValidPeriods[otaValidPeriods.length-2]||'';
   const tLatest=tPeriods[tPeriods.length-1]||'';
   const tPrev=tPeriods[tPeriods.length-2]||'';
   const prevP=gPeriods[gPeriods.indexOf(currentPeriod)-1]||'';
