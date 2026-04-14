@@ -254,8 +254,24 @@ function renderOverall(){
   const otaWarn=_otaRanks.filter(b=>b.score>0&&b.score<8.5);
 
   // 평점 변동 큰 지점 (구글)
-  const bigChange=[..._branchRanks].filter(b=>b.diff!==0).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)).slice(0,6);
-
+const bigChange=[..._branchRanks].filter(b=>b.score>0).map(b=>{
+  const bShort=OTA_MAP[b.name]||b.name.replace(/^\d+\./,'').trim();
+  const otaCur=otaData.filter(d=>d.지점===bShort&&d.주차===otaLatest);
+  const otaPrev=otaData.filter(d=>d.지점===bShort&&d.주차===otaPeriods[otaPeriods.length-2]);
+  const otaCurAvg=otaCur.length?otaCur.reduce((s,d)=>s+d.환산점수,0)/otaCur.length:0;
+  const otaPrevAvg=otaPrev.length?otaPrev.reduce((s,d)=>s+d.환산점수,0)/otaPrev.length:0;
+  const gCurScore=googleData.find(d=>d.지점===b.name&&d.주차===currentPeriod);
+  const gPrevScore=googleData.find(d=>d.지점===b.name&&d.주차===prevP);
+  const tCurScore=tripData.find(d=>d.지점===b.name&&d.주차===tLatest);
+  const tPrevPeriods=[...new Set(tripData.filter(d=>d.지점===b.name).map(d=>d.주차))];
+  const tPrevP=tPrevPeriods[tPrevPeriods.indexOf(tLatest)-1]||'';
+  const tPrevScore=tripData.find(d=>d.지점===b.name&&d.주차===tPrevP);
+  const curTotal=((otaCurAvg||0)+(gCurScore?gCurScore.평점*2:0)+(tCurScore?tCurScore.평점*2:0))/3;
+  const prevTotal=((otaPrevAvg||0)+(gPrevScore?gPrevScore.평점*2:0)+(tPrevScore?tPrevScore.평점*2:0))/3;
+  const diff=curTotal&&prevTotal?+(curTotal-prevTotal).toFixed(2):0;
+  return{name:b.name,score:+curTotal.toFixed(2),diff};
+}).filter(b=>b.diff!==0).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)).slice(0,6);
+ 
   // OTA 채널별 전체 평균
   const channels=[...new Set(otaLatestRows.map(d=>d.OTA))];
   const chAvgs=channels.map(ch=>{
@@ -304,8 +320,8 @@ function renderOverall(){
 
     ${bigChange.length?`
     <div class="chart-card">
-      <div class="chart-title">이번 주 평점 변동 큰 지점 (구글 기준)</div>
-      <div class="change-grid">
+<div class="chart-title">이번 주 평점 변동 큰 지점 (통합 기준)</div>
+<div class="change-grid">
         ${bigChange.map(b=>`<div class="change-item" onclick="selectBranchByName('${b.name}')">
           <div class="change-name">${b.name.replace(/^\d+\./,'')}</div>
           <div class="change-val" style="color:${b.diff>0?'var(--green)':'var(--red)'}">${b.diff>0?'+':''}${b.diff}</div>
