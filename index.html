@@ -186,7 +186,7 @@ function getOtaAvg(bShort,period,otaPeriods){
 
 function calcTotalIncrease(period,prevPeriod){
   const gInc=googleData.filter(d=>d.주차===period&&!EXCLUDED.includes(d.지점)).reduce((s,d)=>s+d.증감,0);
-  const otaPeriods=[...new Set(otaData.map(d=>d.주차))];
+const otaPeriods=[...new Set(otaData.map(d=>d.주차))].sort((a,b)=>new Date(a.replace(/\./g,'-'))-new Date(b.replace(/\./g,'-')));
   const otaCurTotal=otaData.filter(d=>d.주차===otaPeriods[otaPeriods.length-1]).reduce((s,d)=>s+d.리뷰갯수,0);
   const otaPrevTotal=otaData.filter(d=>d.주차===(otaPeriods[otaPeriods.length-2]||'')).reduce((s,d)=>s+d.리뷰갯수,0);
   const otaInc=Math.round(otaCurTotal-otaPrevTotal);
