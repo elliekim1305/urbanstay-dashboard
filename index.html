@@ -211,6 +211,19 @@ function getIntegratedScore(branchName,period,otaPeriods,tPeriods){
   return parts.length?+(parts.reduce((s,v)=>s+v,0)/parts.length).toFixed(2):0;
 }
 
+// OTA 증감: 지점별 채널별로 이번주-전주 각각 계산 후 합산
+function calcOtaInc(curPeriod,prevPeriod){
+  if(!curPeriod||!prevPeriod)return 0;
+  const keys=[...new Set(otaData.map(d=>d.지점+'|||'+d.OTA))];
+  return Math.round(keys.reduce((sum,key)=>{
+    const [bShort,ch]=key.split('|||');
+    const cur=otaData.find(d=>d.지점===bShort&&d.OTA===ch&&d.주차===curPeriod);
+    const prev=otaData.find(d=>d.지점===bShort&&d.OTA===ch&&d.주차===prevPeriod);
+    if(cur&&prev)return sum+(cur.리뷰갯수-prev.리뷰갯수);
+    return sum;
+  },0));
+}
+
 function renderOverall(){
   const gPeriods=[...new Set(googleData.map(d=>d.주차))];
   const otaPeriods=[...new Set(otaData.map(d=>d.주차))];
@@ -221,16 +234,15 @@ function renderOverall(){
   const tPrev=tPeriods[tPeriods.length-2]||'';
   const prevP=gPeriods[gPeriods.indexOf(currentPeriod)-1]||'';
 
-  // 전체 OTA 리뷰 합산 (모든 주차 중 가장 최근)
   const otaLatestRows=otaData.filter(d=>d.주차===otaLatest);
   const otaAvg=otaLatestRows.length?otaLatestRows.reduce((s,d)=>s+d.환산점수,0)/otaLatestRows.length:0;
-  // 총 리뷰수는 전체 OTA에서 지점별 최신 주차 리뷰갯수 합산
+
+  // 총 리뷰수: 지점별 최신 주차 합산
   const allBranchShorts=[...new Set(otaData.map(d=>d.지점))];
   const totalRev=allBranchShorts.reduce((sum,bShort)=>{
     const bPeriods=[...new Set(otaData.filter(d=>d.지점===bShort).map(d=>d.주차))];
     const latest=bPeriods[bPeriods.length-1]||'';
-    const rows=otaData.filter(d=>d.지점===bShort&&d.주차===latest);
-    return sum+rows.reduce((s,d)=>s+d.리뷰갯수,0);
+    return sum+otaData.filter(d=>d.지점===bShort&&d.주차===latest).reduce((s,d)=>s+d.리뷰갯수,0);
   },0);
 
   const gCur=googleData.filter(d=>d.주차===currentPeriod&&!EXCLUDED.includes(d.지점));
@@ -239,14 +251,13 @@ function renderOverall(){
   const tAvg=tCur.length?tCur.reduce((s,d)=>s+d.평점,0)/tCur.length:0;
   const totalAvg=((otaAvg+gAvg*2+tAvg*2)/3).toFixed(2);
 
-  // 이번 주 통합 증감
+  // 증감 계산
   const gInc=gCur.reduce((s,d)=>s+d.증감,0);
-  const otaCurTotal=otaData.filter(d=>d.주차===otaLatest).reduce((s,d)=>s+d.리뷰갯수,0);
-  const otaPrevTotal=otaData.filter(d=>d.주차===otaPrev).reduce((s,d)=>s+d.리뷰갯수,0);
-  const otaInc=Math.round(otaCurTotal-otaPrevTotal);
-  const tCurTotal=tripData.filter(d=>d.주차===tLatest).reduce((s,d)=>s+d.후기갯수,0);
-  const tPrevTotal=tripData.filter(d=>d.주차===tPrev).reduce((s,d)=>s+d.후기갯수,0);
-  const tInc=Math.round(tCurTotal-tPrevTotal);
+  const otaInc=calcOtaInc(otaLatest,otaPrev);
+  const tInc=Math.round(
+    tripData.filter(d=>d.주차===tLatest).reduce((s,d)=>s+d.후기갯수,0)-
+    tripData.filter(d=>d.주차===tPrev).reduce((s,d)=>s+d.후기갯수,0)
+  );
   const totalInc=gInc+otaInc+tInc;
 
   // 통합 지점 순위
@@ -265,19 +276,14 @@ function renderOverall(){
     return{name:ch,score:rows.length?+(rows.reduce((s,d)=>s+d.환산점수,0)/rows.length).toFixed(2):0};
   }).filter(c=>c.score>0).sort((a,b)=>b.score-a.score);
 
-  // 통합 증감 추이 (구글+OTA+트립)
+  // 증감 추이
   const gp=gPeriods.slice(-overallWeekCount);
   const combinedTrend=gp.map(p=>{
     const gI=googleData.filter(d=>d.주차===p&&!EXCLUDED.includes(d.지점)).reduce((s,d)=>s+d.증감,0);
     const prevGP=gPeriods[gPeriods.indexOf(p)-1]||'';
-    // OTA: otaPeriods 기준 전주/이번주
     const otaC=closestPeriod(otaPeriods,p);
     const otaPv=prevGP?closestPeriod(otaPeriods,prevGP):'';
-    const oI=otaC&&otaPv?Math.round(
-      otaData.filter(d=>d.주차===otaC).reduce((s,d)=>s+d.리뷰갯수,0)-
-      otaData.filter(d=>d.주차===otaPv).reduce((s,d)=>s+d.리뷰갯수,0)
-    ):0;
-    // 트립
+    const oI=otaC&&otaPv?calcOtaInc(otaC,otaPv):0;
     const tC=closestPeriod(tPeriods,p);
     const tPv=prevGP?closestPeriod(tPeriods,prevGP):'';
     const tI=tC&&tPv?Math.round(
@@ -378,6 +384,7 @@ function renderBranch(){
     return parts.length?+(parts.reduce((s,v)=>s+v,0)/parts.length).toFixed(2):null;
   });
 
+  // 지점별 OTA 증감: 해당 지점+채널 쌍끼리만 비교
   const incTrend4=recent4.map(p=>{
     const prevP=periods[periods.indexOf(p)-1]||'';
     const gI=gRows.find(d=>d.주차===p)?gRows.find(d=>d.주차===p).증감:0;
