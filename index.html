@@ -224,12 +224,12 @@ function renderOverall(){
   const otaCurTotal=otaLatestRows.reduce((s,d)=>s+d.리뷰갯수,0);
   const otaPrevRows=otaData.filter(d=>d.주차===otaPeriods[otaPeriods.length-2]);
   const otaPrevTotal=otaPrevRows.reduce((s,d)=>s+d.리뷰갯수,0);
-  const otaInc=otaCurTotal-otaPrevTotal;
+const otaInc=Math.round(otaCurTotal-otaPrevTotal);
   const tCurTotal=tripData.filter(d=>d.주차===tLatest).reduce((s,d)=>s+d.후기갯수,0);
   const tPrevTotal=tripData.filter(d=>d.주차===tPeriods[tPeriods.length-2]).reduce((s,d)=>s+d.후기갯수,0);
   const tInc=tCurTotal-tPrevTotal;
-  const totalInc=gInc+otaInc+tInc;
-
+const totalInc=Math.round(gInc+otaInc+tInc);
+  
   // 통합 지점 순위
   const branches=[...new Set(googleData.map(d=>d.지점))].filter(b=>!EXCLUDED.includes(b));
   const integratedRanks=branches.map(b=>{
