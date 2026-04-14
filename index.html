@@ -233,9 +233,9 @@ function renderOverall(){
   // 통합 증감
   const gInc=gCur.reduce((s,d)=>s+d.증감,0);
   const otaCurTotal=otaLatestRows.reduce((s,d)=>s+d.리뷰갯수,0);
- const otaPrev2=otaPeriods[otaPeriods.length-2]||'';
-  const otaPrevRows=otaData.filter(d=>d.주차===otaPrev2);
-  const otaInc=Math.round(otaCurTotal-otaPrevRows.reduce((s,d)=>s+d.리뷰갯수,0));
+  const otaPrevPeriod=otaPeriods[otaPeriods.length-2]||'';
+  const otaPrevTotal=otaData.filter(d=>d.주차===otaPrevPeriod).reduce((s,d)=>s+d.리뷰갯수,0);
+  const otaInc=Math.round(otaCurTotal-otaPrevTotal);
   const tCurTotal=tripData.filter(d=>d.주차===tLatest).reduce((s,d)=>s+d.후기갯수,0);
   const tPrevTotal=tripData.filter(d=>d.주차===tPeriods[tPeriods.length-2]||'').reduce((s,d)=>s+d.후기갯수,0);
   const tInc=Math.round(tCurTotal-tPrevTotal);
