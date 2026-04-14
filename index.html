@@ -154,7 +154,7 @@ function initPeriods(){
 function initBranchMenu(){
   const branches=[...new Set(googleData.map(d=>d.지점))].filter(b=>!EXCLUDED.includes(b)).sort();
   document.getElementById('branchMenu').innerHTML=branches.map(b=>
-    `<div class="menu-item" onclick="selectBranch('${b}',this)">${b}</div>`
+    '<div class="menu-item" onclick="selectBranch(\''+b+'\',this)">'+b+'</div>'
   ).join('');
 }
 
@@ -180,6 +180,16 @@ function setRankMode(mode){
   renderRankList();
 }
 
+function getOtaAvg(bShort,period,otaPeriods){
+  const closest=otaPeriods.length?otaPeriods.reduce((a,c)=>{
+    const d1=Math.abs(new Date(c.replace(/\./g,'-'))-new Date(period.split('~')[0].trim().replace(/\./g,'-')));
+    const d2=Math.abs(new Date(a.replace(/\./g,'-'))-new Date(period.split('~')[0].trim().replace(/\./g,'-')));
+    return d1<d2?c:a;
+  },otaPeriods[0]):'';
+  const rows=otaData.filter(d=>d.지점===bShort&&d.주차===closest);
+  return rows.length?+(rows.reduce((s,d)=>s+d.환산점수,0)/rows.length).toFixed(2):0;
+}
+
 let _branchRanks=[];
 let _otaRanks=[];
 
@@ -188,16 +198,14 @@ function renderRankList(){
   if(!list)return;
   const ranks=rankMode==='google'?_branchRanks:_otaRanks;
   const maxS=Math.max(...ranks.map(b=>b.score),rankMode==='google'?5:10);
-  const warnThres=rankMode==='google'?4.0:8.5;
   list.innerHTML=ranks.slice(0,25).map((b,i)=>{
-    const warn=b.score>0&&b.score<warnThres;
-    return`<div class="rank-item${warn?' warn':''}" onclick="selectBranchByName('${b.name}')">
-      <div class="rank-num">${i+1}</div>
-      <div class="rank-name">${b.name.replace(/^\d+\./,'')}</div>
-      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${(b.score/maxS*100).toFixed(0)}%;background:${scoreColor(rankMode==='google'?b.score*2:b.score)}"></div></div>
-      <div class="rank-score" style="color:${scoreColor(rankMode==='google'?b.score*2:b.score)}">${b.score||'-'}</div>
-      <div class="rank-diff ${b.diff>0?'up':b.diff<0?'down':'neu'}">${b.diff>0?'+':''}${b.diff!==0?b.diff:'-'}</div>
-    </div>`;
+    return'<div class="rank-item" onclick="selectBranchByName(\''+b.name+'\')">'
+      +'<div class="rank-num">'+(i+1)+'</div>'
+      +'<div class="rank-name">'+b.name.replace(/^\d+\./,'')+'</div>'
+      +'<div class="rank-bar-wrap"><div class="rank-bar" style="width:'+(b.score/maxS*100).toFixed(0)+'%;background:'+scoreColor(rankMode==='google'?b.score*2:b.score)+'"></div></div>'
+      +'<div class="rank-score" style="color:'+scoreColor(rankMode==='google'?b.score*2:b.score)+'">'+(b.score||'-')+'</div>'
+      +'<div class="rank-diff '+(b.diff>0?'up':b.diff<0?'down':'neu')+'">'+(b.diff>0?'+':'')+(b.diff!==0?b.diff:'-')+'</div>'
+      +'</div>';
   }).join('');
 }
 
@@ -238,10 +246,8 @@ function renderOverall(){
 
   const bigChange=[..._branchRanks].filter(b=>b.score>0).map(b=>{
     const bShort=OTA_MAP[b.name]||b.name.replace(/^\d+\./,'').trim();
-    const otaCur=otaData.filter(d=>d.지점===bShort&&d.주차===otaLatest);
-    const otaPrev=otaData.filter(d=>d.지점===bShort&&d.주차===otaPeriods[otaPeriods.length-2]);
-    const otaCurAvg=otaCur.length?otaCur.reduce((s,d)=>s+d.환산점수,0)/otaCur.length:0;
-    const otaPrevAvg=otaPrev.length?otaPrev.reduce((s,d)=>s+d.환산점수,0)/otaPrev.length:0;
+    const otaCurAvg=getOtaAvg(bShort,currentPeriod,otaPeriods);
+    const otaPrevAvg=getOtaAvg(bShort,prevP,otaPeriods);
     const gCurS=googleData.find(d=>d.지점===b.name&&d.주차===currentPeriod);
     const gPrevS=googleData.find(d=>d.지점===b.name&&d.주차===prevP);
     const tCurS=tripData.find(d=>d.지점===b.name&&d.주차===tLatest);
@@ -263,49 +269,42 @@ function renderOverall(){
   const gp=gPeriods.slice(-16);
   const incTrend=gp.map(p=>googleData.filter(d=>d.주차===p&&!EXCLUDED.includes(d.지점)).reduce((s,d)=>s+d.증감,0));
 
-  document.getElementById('mainContent').innerHTML=`
-    <div class="summary-row">
-      <div class="stat-card"><div class="stat-label">전체 통합 점수</div><div class="stat-value" style="color:${scoreColor(totalAvg)}">${totalAvg}</div><div class="stat-sub">OTA+구글+트립 (10점 만점)</div></div>
-      <div class="stat-card"><div class="stat-label">총 리뷰 수</div><div class="stat-value">${(totalRev/1000).toFixed(1)}K</div><div class="stat-sub">OTA 전체 합산</div></div>
-      <div class="stat-card"><div class="stat-label">관리 지점 수</div><div class="stat-value">${_branchRanks.length}</div><div class="stat-sub">전국 지점</div></div>
-      <div class="stat-card"><div class="stat-label">이번 주 증감</div><div class="stat-value" style="color:${gInc>=0?'var(--green)':'var(--red)'}">${gInc>=0?'+':''}${gInc}</div><div class="stat-sub">전주 대비 구글 후기</div></div>
-    </div>
-    <div class="charts-row">
-      <div class="chart-card">
-        <div class="chart-title">주간 구글 후기 증감 추이 (최근 16주)</div>
-        <div class="increase-list">
-          ${gp.map((p,i)=>{const v=incTrend[i];const mx=Math.max(...incTrend.map(Math.abs),1);return`<div class="increase-item"><div class="increase-label">${p.split('~')[0].trim().split('.').slice(1).join('/')}</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:${(Math.abs(v)/mx*100).toFixed(0)}%;background:${v>=0?'var(--green)':'var(--red)'}"></div></div><div class="increase-val" style="color:${v>=0?'var(--green)':'var(--red)'}">${v>=0?'+':''}${v}</div></div>`;}).join('')}
-        </div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">지점 평점 순위
-          <div class="rank-tabs">
-            <button class="rank-tab active" data-mode="google" onclick="setRankMode('google')">구글</button>
-            <button class="rank-tab" data-mode="ota" onclick="setRankMode('ota')">OTA</button>
-          </div>
-        </div>
-        <div class="rank-list" id="rankList"></div>
-      </div>
-    </div>
-    <div class="section-label">OTA 채널별 전체 평균</div>
-    <div class="channel-grid">
-      ${chAvgs.map(c=>`<div class="channel-card">
-        <div class="channel-name">${c.name}</div>
-        <div class="channel-score" style="color:${scoreColor(c.score)}">${c.score}<span style="font-size:12px;color:var(--text2);font-weight:400;"> /10</span></div>
-        <div class="channel-bar-wrap"><div class="channel-bar" style="width:${(c.score/10*100).toFixed(0)}%;background:${scoreColor(c.score)}"></div></div>
-      </div>`).join('')}
-    </div>
-    ${bigChange.length?`
-    <div class="chart-card">
-      <div class="chart-title">이번 주 평점 변동 큰 지점 (통합 기준)</div>
-      <div class="change-grid">
-        ${bigChange.map(b=>`<div class="change-item" onclick="selectBranchByName('${b.name}')">
-          <div class="change-name">${b.name.replace(/^\d+\./,'')}</div>
-          <div class="change-val" style="color:${b.diff>0?'var(--green)':'var(--red)'}">${b.diff>0?'+':''}${b.diff}</div>
-        </div>`).join('')}
-      </div>
-    </div>`:''}`;
+  let html='';
+  html+='<div class="summary-row">';
+  html+='<div class="stat-card"><div class="stat-label">전체 통합 점수</div><div class="stat-value" style="color:'+scoreColor(totalAvg)+'">'+totalAvg+'</div><div class="stat-sub">OTA+구글+트립 (10점 만점)</div></div>';
+  html+='<div class="stat-card"><div class="stat-label">총 리뷰 수</div><div class="stat-value">'+(totalRev/1000).toFixed(1)+'K</div><div class="stat-sub">OTA 전체 합산</div></div>';
+  html+='<div class="stat-card"><div class="stat-label">관리 지점 수</div><div class="stat-value">'+_branchRanks.length+'</div><div class="stat-sub">전국 지점</div></div>';
+  html+='<div class="stat-card"><div class="stat-label">이번 주 증감</div><div class="stat-value" style="color:'+(gInc>=0?'var(--green)':'var(--red)')+'">'+( gInc>=0?'+':'')+gInc+'</div><div class="stat-sub">전주 대비 구글 후기</div></div>';
+  html+='</div>';
 
+  html+='<div class="charts-row">';
+  html+='<div class="chart-card"><div class="chart-title">주간 구글 후기 증감 추이 (최근 16주)</div><div class="increase-list">';
+  gp.forEach((p,i)=>{
+    const v=incTrend[i];
+    const mx=Math.max(...incTrend.map(Math.abs),1);
+    html+='<div class="increase-item"><div class="increase-label">'+p.split('~')[0].trim().split('.').slice(1).join('/')+'</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:'+(Math.abs(v)/mx*100).toFixed(0)+'%;background:'+(v>=0?'var(--green)':'var(--red)')+'"></div></div><div class="increase-val" style="color:'+(v>=0?'var(--green)':'var(--red)')+'">'+( v>=0?'+':'')+v+'</div></div>';
+  });
+  html+='</div></div>';
+
+  html+='<div class="chart-card"><div class="chart-title">지점 평점 순위<div class="rank-tabs"><button class="rank-tab active" data-mode="google" onclick="setRankMode(\'google\')">구글</button><button class="rank-tab" data-mode="ota" onclick="setRankMode(\'ota\')">OTA</button></div></div><div class="rank-list" id="rankList"></div></div>';
+  html+='</div>';
+
+  html+='<div class="section-label">OTA 채널별 전체 평균</div>';
+  html+='<div class="channel-grid">';
+  chAvgs.forEach(c=>{
+    html+='<div class="channel-card"><div class="channel-name">'+c.name+'</div><div class="channel-score" style="color:'+scoreColor(c.score)+'">'+c.score+'<span style="font-size:12px;color:var(--text2);font-weight:400;"> /10</span></div><div class="channel-bar-wrap"><div class="channel-bar" style="width:'+(c.score/10*100).toFixed(0)+'%;background:'+scoreColor(c.score)+'"></div></div></div>';
+  });
+  html+='</div>';
+
+  if(bigChange.length){
+    html+='<div class="chart-card"><div class="chart-title">이번 주 평점 변동 큰 지점 (통합 기준)</div><div class="change-grid">';
+    bigChange.forEach(b=>{
+      html+='<div class="change-item" onclick="selectBranchByName(\''+b.name+'\')"><div class="change-name">'+b.name.replace(/^\d+\./,'')+'</div><div class="change-val" style="color:'+(b.diff>0?'var(--green)':'var(--red)')+'">'+( b.diff>0?'+':'')+b.diff+'</div></div>';
+    });
+    html+='</div></div>';
+  }
+
+  document.getElementById('mainContent').innerHTML=html;
   renderRankList();
 }
 
@@ -318,7 +317,6 @@ function renderBranch(){
   const curG=gRows.find(d=>d.주차===currentPeriod);
   const gScore=curG?curG.평점:0;
   const gInc=curG?curG.증감:0;
-  const gReviews=curG?curG.후기갯수:0;
 
   const tBranchPeriods=[...new Set(tripData.filter(d=>d.지점===b).map(d=>d.주차))];
   const tBranchLatest=tBranchPeriods[tBranchPeriods.length-1]||'';
@@ -331,107 +329,82 @@ function renderBranch(){
   const otaAvgBranch=otaBranch.length?otaBranch.reduce((s,d)=>s+d.환산점수,0)/otaBranch.length:0;
 
   const channelCards=[
-    ...otaBranch.map(d=>({name:d.OTA,score:d.환산점수,sub:`리뷰 ${d.리뷰갯수.toLocaleString()}개`,max:10})),
-    {name:'구글',score:gScore?+(gScore*2).toFixed(2):0,sub:`원점수 ${gScore}/5`,max:10},
-    {name:'트립어드바이저',score:tScore?+(tScore*2).toFixed(2):0,sub:`원점수 ${tScore}/5`,max:10}
+    ...otaBranch.map(d=>({name:d.OTA,score:d.환산점수,sub:'리뷰 '+d.리뷰갯수.toLocaleString()+'개',max:10})),
+    {name:'구글',score:gScore?+(gScore*2).toFixed(2):0,sub:'원점수 '+gScore+'/5',max:10},
+    {name:'트립어드바이저',score:tScore?+(tScore*2).toFixed(2):0,sub:'원점수 '+tScore+'/5',max:10}
   ];
 
   const trendData=recent.map(p=>{
     const g=gRows.find(d=>d.주차===p);
-    const otaClosest=otaPeriods.length?otaPeriods.reduce((a,c)=>{
-      const diff1=Math.abs(new Date(c.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
-      const diff2=Math.abs(new Date(a.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
-      return diff1<diff2?c:a;
-    },otaPeriods[0]):'';
-    const otaRows=otaData.filter(d=>d.지점===bShort&&d.주차===otaClosest);
-    const otaAvg=otaRows.length?otaRows.reduce((s,d)=>s+d.환산점수,0)/otaRows.length:0;
+    const otaAvg=getOtaAvg(bShort,p,otaPeriods);
     const tRow=tripData.find(d=>d.지점===b&&d.주차===p);
     if(!g)return null;
-    const total=((otaAvg||0)+(g.평점*2)+(tRow?tRow.평점*2:g.평점*2))/3;
-    return+total.toFixed(2);
+    return+((otaAvg||0)+(g.평점*2)+(tRow?tRow.평점*2:g.평점*2)).toFixed(2)/3;
   });
 
   const gIncTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
 
-  document.getElementById('mainContent').innerHTML=`
-    <div class="summary-row">
-      <div class="stat-card"><div class="stat-label">구글 평점</div><div class="stat-value" style="color:${scoreColor(gScore*2)}">${gScore?+(gScore*2).toFixed(1):'-'}</div><div class="stat-sub"><span class="${gInc>=0?'up':'down'}">${gInc>=0?'▲':'▼'}${Math.abs(gInc)}</span> 원점수 ${gScore}/5</div></div>
-      <div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tScore*2)}">${tScore?+(tScore*2).toFixed(1):'-'}</div><div class="stat-sub">원점수 ${tScore}/5</div></div>
-      <div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:${scoreColor(otaAvgBranch)}">${otaAvgBranch?otaAvgBranch.toFixed(2):'-'}</div><div class="stat-sub">10점 만점</div></div>
-      <div class="stat-card"><div class="stat-label">관리 채널 수</div><div class="stat-value">${channelCards.length}</div><div class="stat-sub">OTA+구글+트립</div></div>
-    </div>
-    <div class="section-label">채널별 평점 (10점 만점 환산)</div>
-    <div class="channel-grid">
-      ${channelCards.map(c=>{
-        const pct=(c.score/10*100).toFixed(0);
-        const col=scoreColor(c.score);
-        return`<div class="channel-card">
-          <div class="channel-name">${c.name}</div>
-          <div class="channel-score" style="color:${col}">${c.score||'-'}<span style="font-size:12px;color:var(--text2);font-weight:400;"> /10</span></div>
-          <div class="channel-sub">${c.sub}</div>
-          <div class="channel-bar-wrap"><div class="channel-bar" style="width:${pct}%;background:${col}"></div></div>
-        </div>`;
-      }).join('')}
-    </div>
-    <div class="charts-row">
-      <div class="chart-card">
-        <div class="chart-title">통합 평점 추이
-          <select class="week-select" onchange="onWeekChange(this.value)">
-            <option value="4">최근 4주</option>
-            <option value="8">최근 8주</option>
-            <option value="16" ${weekCount===16?'selected':''}>최근 16주</option>
-          </select>
-        </div>
-        <div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title">주간 후기 증감</div>
-        <div class="increase-list">
-          ${recent.map((p,i)=>{const v=gIncTrend[i];const mx=Math.max(...gIncTrend.map(Math.abs),1);return`<div class="increase-item"><div class="increase-label">${p.split('~')[0].trim().split('.').slice(1).join('/')}</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:${(Math.abs(v)/mx*100).toFixed(0)}%;background:${v>=0?'var(--green)':'var(--red)'}"></div></div><div class="increase-val" style="color:${v>=0?'var(--green)':'var(--red)'}">${v>=0?'+':''}${v}</div></div>`;}).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">주차별 상세 데이터</div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead><tr style="border-bottom:1px solid var(--border);">
-<th style="padding:8px 10px;text-align:left;color:var(--text2);font-weight:500;">주차</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">구글 후기수</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">증감</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">구글 평점</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">트립 평점</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">OTA 평균</th>
-            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">통합 점수</th>
-          </tr></thead>
-          <tbody>
-            ${periods.slice(-16).slice().reverse().map(p=>{
-              const g=gRows.find(d=>d.주차===p);
-              const t=tripData.find(d=>d.지점===b&&d.주차===p);
-              const isCur=p===currentPeriod;
-              const otaClosestP=otaPeriods.length?otaPeriods.reduce((a,c)=>{
-                  const d1=Math.abs(new Date(c.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
-                  const d2=Math.abs(new Date(a.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
-                  return d1<d2?c:a;
-                },otaPeriods[0]):'';
-                const otaRowsP=otaData.filter(d=>d.지점===bShort&&d.주차===otaClosestP);
-                const otaAvgP=otaRowsP.length?+(otaRowsP.reduce((s,d)=>s+d.환산점수,0)/otaRowsP.length).toFixed(2):0;
-                const totalP=g?+((otaAvgP||0)+(g.평점*2)+(t?t.평점*2:g.평점*2)).toFixed(2)/3:0;
-              return`<tr style="border-top:1px solid var(--border);${isCur?'background:rgba(74,124,247,0.04);':''}">
-                <td style="padding:7px 10px;color:var(--text2);font-family:'DM Mono',monospace;font-size:11px;">${p}</td>
-                <td style="padding:7px 10px;text-align:right;">${g?g.후기갯수.toLocaleString():'-'}</td>
-                <td style="padding:7px 10px;text-align:right;color:${g&&g.증감>0?'var(--green)':g&&g.증감<0?'var(--red)':'var(--text2)'}">${g?(g.증감>0?'+':'')+g.증감:'-'}</td>
-                <td style="padding:7px 10px;text-align:right;color:${g?scoreColor(g.평점*2):'var(--text2)'};">${g?g.평점:'-'}</td>
-                <td style="padding:7px 10px;text-align:right;color:${t&&t.평점?scoreColor(t.평점*2):'var(--text2)'};">${t&&t.평점?t.평점:'-'}</td>
-                <td style="padding:7px 10px;text-align:right;color:${otaAvgP?scoreColor(otaAvgP):'var(--text2)'};">${otaAvgP||'-'}</td>
-                <td style="padding:7px 10px;text-align:right;font-weight:600;color:${totalP?scoreColor(totalP):'var(--text2)'};">${totalP?totalP.toFixed(2):'-'}</td>
-              </tr>`;
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>`;
+  let html='';
+  html+='<div class="summary-row">';
+  html+='<div class="stat-card"><div class="stat-label">구글 평점</div><div class="stat-value" style="color:'+scoreColor(gScore*2)+'">'+( gScore?+(gScore*2).toFixed(1):'-')+'</div><div class="stat-sub"><span class="'+(gInc>=0?'up':'down')+'">'+(gInc>=0?'▲':'▼')+Math.abs(gInc)+'</span> 원점수 '+gScore+'/5</div></div>';
+  html+='<div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:'+scoreColor(tScore*2)+'">'+( tScore?+(tScore*2).toFixed(1):'-')+'</div><div class="stat-sub">원점수 '+tScore+'/5</div></div>';
+  html+='<div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:'+scoreColor(otaAvgBranch)+'">'+( otaAvgBranch?otaAvgBranch.toFixed(2):'-')+'</div><div class="stat-sub">10점 만점</div></div>';
+  html+='<div class="stat-card"><div class="stat-label">관리 채널 수</div><div class="stat-value">'+channelCards.length+'</div><div class="stat-sub">OTA+구글+트립</div></div>';
+  html+='</div>';
+
+  html+='<div class="section-label">채널별 평점 (10점 만점 환산)</div>';
+  html+='<div class="channel-grid">';
+  channelCards.forEach(c=>{
+    const pct=(c.score/10*100).toFixed(0);
+    const col=scoreColor(c.score);
+    html+='<div class="channel-card"><div class="channel-name">'+c.name+'</div><div class="channel-score" style="color:'+col+'">'+( c.score||'-')+'<span style="font-size:12px;color:var(--text2);font-weight:400;"> /10</span></div><div class="channel-sub">'+c.sub+'</div><div class="channel-bar-wrap"><div class="channel-bar" style="width:'+pct+'%;background:'+col+'"></div></div></div>';
+  });
+  html+='</div>';
+
+  html+='<div class="charts-row">';
+  html+='<div class="chart-card"><div class="chart-title">통합 평점 추이 <select class="week-select" onchange="onWeekChange(this.value)"><option value="4"'+(weekCount===4?' selected':'')+'>최근 4주</option><option value="8"'+(weekCount===8?' selected':'')+'>최근 8주</option><option value="16"'+(weekCount===16?' selected':'')+'>최근 16주</option></select></div><div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div></div>';
+
+  html+='<div class="chart-card"><div class="chart-title">주간 후기 증감</div><div class="increase-list">';
+  recent.forEach((p,i)=>{
+    const v=gIncTrend[i];
+    const mx=Math.max(...gIncTrend.map(Math.abs),1);
+    html+='<div class="increase-item"><div class="increase-label">'+p.split('~')[0].trim().split('.').slice(1).join('/')+'</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:'+(Math.abs(v)/mx*100).toFixed(0)+'%;background:'+(v>=0?'var(--green)':'var(--red)')+'"></div></div><div class="increase-val" style="color:'+(v>=0?'var(--green)':'var(--red)')+'">'+( v>=0?'+':'')+v+'</div></div>';
+  });
+  html+='</div></div></div>';
+
+  html+='<div class="chart-card"><div class="chart-title">주차별 상세 데이터</div><div style="overflow-x:auto;">';
+  html+='<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html+='<thead><tr style="border-bottom:1px solid var(--border);">';
+  html+='<th style="padding:8px 10px;text-align:left;color:var(--text2);font-weight:500;">주차</th>';
+  html+='<th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">구글 후기수</th>';
+  html+='<th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">증감</th>';
+  html+='<th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">구글 평점</th>';
+  html+='<th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">트립 평점</th>';
+  html+='<th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">OTA 평균</th>';
+  html+='<th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">통합 점수</th>';
+  html+='</tr></thead><tbody>';
+
+  periods.slice(-16).slice().reverse().forEach(p=>{
+    const g=gRows.find(d=>d.주차===p);
+    const t=tripData.find(d=>d.지점===b&&d.주차===p);
+    const otaAvgP=getOtaAvg(bShort,p,otaPeriods);
+    const gP=g?g.평점:0;
+    const tP=t&&t.평점?t.평점:0;
+    const totalP=gP?+((otaAvgP||0)+(gP*2)+(tP?tP*2:gP*2)).toFixed(2)/3:0;
+    const isCur=p===currentPeriod;
+    html+='<tr style="border-top:1px solid var(--border);'+(isCur?'background:rgba(74,124,247,0.04);':'')+'">';
+    html+='<td style="padding:7px 10px;color:var(--text2);font-family:\'DM Mono\',monospace;font-size:11px;">'+p+'</td>';
+    html+='<td style="padding:7px 10px;text-align:right;">'+(g?g.후기갯수.toLocaleString():'-')+'</td>';
+    html+='<td style="padding:7px 10px;text-align:right;color:'+(g&&g.증감>0?'var(--green)':g&&g.증감<0?'var(--red)':'var(--text2)')+'">'+( g?(g.증감>0?'+':'')+g.증감:'-')+'</td>';
+    html+='<td style="padding:7px 10px;text-align:right;color:'+(g?scoreColor(g.평점*2):'var(--text2)')+';">'+(g?g.평점:'-')+'</td>';
+    html+='<td style="padding:7px 10px;text-align:right;color:'+(tP?scoreColor(tP*2):'var(--text2)')+';">'+(tP||'-')+'</td>';
+    html+='<td style="padding:7px 10px;text-align:right;color:'+(otaAvgP?scoreColor(otaAvgP):'var(--text2)')+';">'+(otaAvgP||'-')+'</td>';
+    html+='<td style="padding:7px 10px;text-align:right;font-weight:600;color:'+(totalP?scoreColor(totalP):'var(--text2)')+';">'+(totalP?totalP.toFixed(2):'-')+'</td>';
+    html+='</tr>';
+  });
+  html+='</tbody></table></div></div>';
+
+  document.getElementById('mainContent').innerHTML=html;
 
   setTimeout(()=>{
     if(trendChart)trendChart.destroy();
@@ -441,13 +414,7 @@ function renderBranch(){
       type:'line',
       data:{
         labels:recent.map(p=>p.split('~')[0].trim().split('.').slice(1).join('/')),
-        datasets:[{
-          label:'통합 평점',
-          data:trendData,
-          borderColor:'#4a7cf7',
-          backgroundColor:'#4a7cf720',
-          tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true
-        }]
+        datasets:[{label:'통합 평점',data:trendData,borderColor:'#4a7cf7',backgroundColor:'#4a7cf720',tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true}]
       },
       options:{
         responsive:true,maintainAspectRatio:false,
