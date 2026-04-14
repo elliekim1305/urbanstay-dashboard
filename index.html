@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f5f6fa;--sidebar:#ffffff;--card:#ffffff;--card2:#f0f2f8;--accent:#4a7cf7;--green:#22c97a;--red:#e85555;--yellow:#f0900a;--text:#1a1d2e;--text2:#6b7599;--text3:#a0a8c0;--border:#e2e6f0;--border2:#d0d6e8;}
-  *{box-sizing:border-box;margin:0;padding:0;}
+*{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;display:flex;height:100vh;overflow:hidden;}
 .sidebar{width:200px;min-width:200px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
 .sidebar-logo{padding:20px 16px 12px;font-size:15px;font-weight:700;color:var(--accent);letter-spacing:-0.3px;border-bottom:1px solid var(--border);}
@@ -16,8 +16,8 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .sidebar-menu::-webkit-scrollbar{width:3px;}
 .sidebar-menu::-webkit-scrollbar-thumb{background:var(--border2);}
 .menu-item{padding:8px 16px;font-size:13px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all 0.15s;}
-.menu-item:hover{color:var(--text);background:rgba(91,141,238,0.06);}
-.menu-item.active{color:var(--accent);background:rgba(91,141,238,0.1);border-left-color:var(--accent);}
+.menu-item:hover{color:var(--text);background:rgba(74,124,247,0.06);}
+.menu-item.active{color:var(--accent);background:rgba(74,124,247,0.1);border-left-color:var(--accent);}
 .menu-section{padding:12px 16px 4px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .topbar{background:var(--sidebar);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;}
@@ -43,8 +43,7 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .rank-list::-webkit-scrollbar{width:3px;}
 .rank-list::-webkit-scrollbar-thumb{background:var(--border2);}
 .rank-item{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;transition:background 0.15s;}
-.rank-item:hover{background:rgba(91,141,238,0.08);}
-.rank-item.warn{background:rgba(248,113,113,0.06);border-left:2px solid var(--red);}
+.rank-item:hover{background:rgba(74,124,247,0.08);}
 .rank-num{font-size:10px;font-weight:700;color:var(--text3);width:14px;text-align:center;font-family:'DM Mono',monospace;}
 .rank-name{font-size:12px;flex:1;color:var(--text);}
 .rank-bar-wrap{width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
@@ -67,29 +66,22 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-seri
 .increase-bar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
 .increase-bar{height:100%;border-radius:3px;}
 .increase-val{font-size:11px;font-family:'DM Mono',monospace;width:38px;text-align:right;}
-.alert-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
-.alert-card{background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.3);border-radius:10px;padding:14px 16px;}
-.alert-title{font-size:11px;color:var(--red);font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
-.alert-item{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(248,113,113,0.1);cursor:pointer;}
-.alert-item:last-child{border-bottom:none;}
-.alert-item:hover{opacity:0.8;}
-.alert-name{font-size:12px;color:var(--text);}
-.alert-score{font-size:12px;font-family:'DM Mono',monospace;color:var(--red);font-weight:600;}
 .change-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
 .change-item{display:flex;align-items:center;justify-content:space-between;padding:5px 8px;background:var(--card2);border-radius:6px;cursor:pointer;}
-.change-item:hover{background:rgba(91,141,238,0.08);}
+.change-item:hover{background:rgba(74,124,247,0.08);}
 .change-name{font-size:12px;color:var(--text);}
 .change-val{font-size:12px;font-family:'DM Mono',monospace;font-weight:600;}
 .loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:999;}
 .spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .section-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+.week-select{background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:6px;font-size:11px;font-family:'Noto Sans KR',sans-serif;outline:none;cursor:pointer;}
 </style>
 </head>
 <body>
 <div class="loading-screen" id="loadingScreen">
   <div class="spinner"></div>
-  <div style="font-size:14px;color:#7f8ba8;">데이터 불러오는 중...</div>
+  <div style="font-size:14px;color:#6b7599;">데이터 불러오는 중...</div>
 </div>
 <div class="sidebar">
   <div class="sidebar-logo">Urbanstay<span>후기 대시보드</span></div>
@@ -133,8 +125,7 @@ const OTA_MAP={
 
 let otaData=[],googleData=[],tripData=[];
 let currentBranch=null,currentPeriod='';
-let trendChart=null;
-let rankMode='google';
+let trendChart=null,rankMode='google',weekCount=16;
 
 async function loadAll(){
   try{
@@ -148,7 +139,7 @@ async function loadAll(){
     document.getElementById('lastUpdated').textContent=new Date().toLocaleDateString('ko-KR')+' 기준';
     document.getElementById('loadingScreen').style.display='none';
   }catch(e){
-    document.getElementById('loadingScreen').innerHTML='<div style="color:#f06565;font-size:14px;">로드 실패: '+e.message+'</div>';
+    document.getElementById('loadingScreen').innerHTML='<div style="color:#e85555;font-size:14px;">로드 실패: '+e.message+'</div>';
   }
 }
 
@@ -168,6 +159,7 @@ function initBranchMenu(){
 }
 
 function onPeriodChange(){currentPeriod=document.getElementById('periodSelect').value;render();}
+function onWeekChange(v){weekCount=parseInt(v);renderBranch();}
 function selectBranch(branch,el){
   currentBranch=branch;
   document.querySelectorAll('.menu-item').forEach(e=>e.classList.remove('active'));
@@ -177,10 +169,10 @@ function selectBranch(branch,el){
 }
 function render(){currentBranch?renderBranch():renderOverall();}
 function scoreColor(s){
-  if(s>=9)return'#3ecf8e';
-  if(s>=8)return'#5b8dee';
-  if(s>=7)return'#f5a623';
-  return'#f06565';
+  if(s>=9)return'#22c97a';
+  if(s>=8)return'#4a7cf7';
+  if(s>=7)return'#f0900a';
+  return'#e85555';
 }
 function setRankMode(mode){
   rankMode=mode;
@@ -227,52 +219,41 @@ function renderOverall(){
 
   const tCur=tripData.filter(d=>d.주차===tLatest&&d.후기갯수>0);
   const tAvg=tCur.length?tCur.reduce((s,d)=>s+d.평점,0)/tCur.length:0;
-
   const totalAvg=((otaAvg+gAvg*2+tAvg*2)/3).toFixed(2);
 
-  // 구글 지점 순위
   _branchRanks=[...new Set(googleData.map(d=>d.지점))].filter(b=>!EXCLUDED.includes(b)).map(b=>{
     const c=googleData.find(d=>d.지점===b&&d.주차===currentPeriod);
     const pv=googleData.find(d=>d.지점===b&&d.주차===prevP);
     return{name:b,score:c?c.평점:0,diff:c&&pv?+(c.평점-pv.평점).toFixed(2):0};
   }).filter(b=>b.score>0).sort((a,b)=>b.score-a.score);
 
-  // OTA 지점 순위
   _otaRanks=[...new Set(otaData.map(d=>d.지점))].map(bShort=>{
     const rows=otaData.filter(d=>d.지점===bShort&&d.주차===otaLatest);
     const avg=rows.length?+(rows.reduce((s,d)=>s+d.환산점수,0)/rows.length).toFixed(2):0;
     const prevRows=otaData.filter(d=>d.지점===bShort&&d.주차===otaPeriods[otaPeriods.length-2]);
     const prevAvg=prevRows.length?+(prevRows.reduce((s,d)=>s+d.환산점수,0)/prevRows.length).toFixed(2):0;
-    // OTA 이름 → 구글 이름으로 역매핑
     const fullName=Object.keys(OTA_MAP).find(k=>OTA_MAP[k]===bShort)||bShort;
     return{name:fullName,score:avg,diff:avg&&prevAvg?+(avg-prevAvg).toFixed(2):0};
   }).filter(b=>b.score>0&&!EXCLUDED.includes(b.name)).sort((a,b)=>b.score-a.score);
 
-  // 경고 지점 (구글 4.0 미만)
-  const gWarn=_branchRanks.filter(b=>b.score>0&&b.score<4.0);
-  // 경고 지점 (OTA 8.5 미만)
-  const otaWarn=_otaRanks.filter(b=>b.score>0&&b.score<8.5);
+  const bigChange=[..._branchRanks].filter(b=>b.score>0).map(b=>{
+    const bShort=OTA_MAP[b.name]||b.name.replace(/^\d+\./,'').trim();
+    const otaCur=otaData.filter(d=>d.지점===bShort&&d.주차===otaLatest);
+    const otaPrev=otaData.filter(d=>d.지점===bShort&&d.주차===otaPeriods[otaPeriods.length-2]);
+    const otaCurAvg=otaCur.length?otaCur.reduce((s,d)=>s+d.환산점수,0)/otaCur.length:0;
+    const otaPrevAvg=otaPrev.length?otaPrev.reduce((s,d)=>s+d.환산점수,0)/otaPrev.length:0;
+    const gCurS=googleData.find(d=>d.지점===b.name&&d.주차===currentPeriod);
+    const gPrevS=googleData.find(d=>d.지점===b.name&&d.주차===prevP);
+    const tCurS=tripData.find(d=>d.지점===b.name&&d.주차===tLatest);
+    const tPrevPeriods=[...new Set(tripData.filter(d=>d.지점===b.name).map(d=>d.주차))];
+    const tPrevP=tPrevPeriods[tPrevPeriods.indexOf(tLatest)-1]||'';
+    const tPrevS=tripData.find(d=>d.지점===b.name&&d.주차===tPrevP);
+    const curTotal=((otaCurAvg||0)+(gCurS?gCurS.평점*2:0)+(tCurS?tCurS.평점*2:0))/3;
+    const prevTotal=((otaPrevAvg||0)+(gPrevS?gPrevS.평점*2:0)+(tPrevS?tPrevS.평점*2:0))/3;
+    const diff=curTotal&&prevTotal?+(curTotal-prevTotal).toFixed(2):0;
+    return{name:b.name,score:+curTotal.toFixed(2),diff};
+  }).filter(b=>b.diff!==0).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)).slice(0,6);
 
-  // 평점 변동 큰 지점 (구글)
-const bigChange=[..._branchRanks].filter(b=>b.score>0).map(b=>{
-  const bShort=OTA_MAP[b.name]||b.name.replace(/^\d+\./,'').trim();
-  const otaCur=otaData.filter(d=>d.지점===bShort&&d.주차===otaLatest);
-  const otaPrev=otaData.filter(d=>d.지점===bShort&&d.주차===otaPeriods[otaPeriods.length-2]);
-  const otaCurAvg=otaCur.length?otaCur.reduce((s,d)=>s+d.환산점수,0)/otaCur.length:0;
-  const otaPrevAvg=otaPrev.length?otaPrev.reduce((s,d)=>s+d.환산점수,0)/otaPrev.length:0;
-  const gCurScore=googleData.find(d=>d.지점===b.name&&d.주차===currentPeriod);
-  const gPrevScore=googleData.find(d=>d.지점===b.name&&d.주차===prevP);
-  const tCurScore=tripData.find(d=>d.지점===b.name&&d.주차===tLatest);
-  const tPrevPeriods=[...new Set(tripData.filter(d=>d.지점===b.name).map(d=>d.주차))];
-  const tPrevP=tPrevPeriods[tPrevPeriods.indexOf(tLatest)-1]||'';
-  const tPrevScore=tripData.find(d=>d.지점===b.name&&d.주차===tPrevP);
-  const curTotal=((otaCurAvg||0)+(gCurScore?gCurScore.평점*2:0)+(tCurScore?tCurScore.평점*2:0))/3;
-  const prevTotal=((otaPrevAvg||0)+(gPrevScore?gPrevScore.평점*2:0)+(tPrevScore?tPrevScore.평점*2:0))/3;
-  const diff=curTotal&&prevTotal?+(curTotal-prevTotal).toFixed(2):0;
-  return{name:b.name,score:+curTotal.toFixed(2),diff};
-}).filter(b=>b.diff!==0).sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)).slice(0,6);
- 
-  // OTA 채널별 전체 평균
   const channels=[...new Set(otaLatestRows.map(d=>d.OTA))];
   const chAvgs=channels.map(ch=>{
     const rows=otaLatestRows.filter(d=>d.OTA===ch);
@@ -289,7 +270,6 @@ const bigChange=[..._branchRanks].filter(b=>b.score>0).map(b=>{
       <div class="stat-card"><div class="stat-label">관리 지점 수</div><div class="stat-value">${_branchRanks.length}</div><div class="stat-sub">전국 지점</div></div>
       <div class="stat-card"><div class="stat-label">이번 주 증감</div><div class="stat-value" style="color:${gInc>=0?'var(--green)':'var(--red)'}">${gInc>=0?'+':''}${gInc}</div><div class="stat-sub">전주 대비 구글 후기</div></div>
     </div>
-
     <div class="charts-row">
       <div class="chart-card">
         <div class="chart-title">주간 구글 후기 증감 추이 (최근 16주)</div>
@@ -298,8 +278,7 @@ const bigChange=[..._branchRanks].filter(b=>b.score>0).map(b=>{
         </div>
       </div>
       <div class="chart-card">
-        <div class="chart-title">
-          지점 평점 순위
+        <div class="chart-title">지점 평점 순위
           <div class="rank-tabs">
             <button class="rank-tab active" data-mode="google" onclick="setRankMode('google')">구글</button>
             <button class="rank-tab" data-mode="ota" onclick="setRankMode('ota')">OTA</button>
@@ -308,27 +287,24 @@ const bigChange=[..._branchRanks].filter(b=>b.score>0).map(b=>{
         <div class="rank-list" id="rankList"></div>
       </div>
     </div>
-
     <div class="section-label">OTA 채널별 전체 평균</div>
-    <div class="channel-grid" style="margin-bottom:20px;">
+    <div class="channel-grid">
       ${chAvgs.map(c=>`<div class="channel-card">
         <div class="channel-name">${c.name}</div>
         <div class="channel-score" style="color:${scoreColor(c.score)}">${c.score}<span style="font-size:12px;color:var(--text2);font-weight:400;"> /10</span></div>
         <div class="channel-bar-wrap"><div class="channel-bar" style="width:${(c.score/10*100).toFixed(0)}%;background:${scoreColor(c.score)}"></div></div>
       </div>`).join('')}
     </div>
-
     ${bigChange.length?`
     <div class="chart-card">
-<div class="chart-title">이번 주 평점 변동 큰 지점 (통합 기준)</div>
-<div class="change-grid">
+      <div class="chart-title">이번 주 평점 변동 큰 지점 (통합 기준)</div>
+      <div class="change-grid">
         ${bigChange.map(b=>`<div class="change-item" onclick="selectBranchByName('${b.name}')">
           <div class="change-name">${b.name.replace(/^\d+\./,'')}</div>
           <div class="change-val" style="color:${b.diff>0?'var(--green)':'var(--red)'}">${b.diff>0?'+':''}${b.diff}</div>
         </div>`).join('')}
       </div>
-    </div>`:''}
-  `;
+    </div>`:''}`;
 
   renderRankList();
 }
@@ -338,9 +314,8 @@ function renderBranch(){
   const bShort=OTA_MAP[b]||b.replace(/^\d+\./,'').trim();
   const gRows=googleData.filter(d=>d.지점===b);
   const periods=[...new Set(gRows.map(d=>d.주차))];
-const weekCount=document.getElementById('weekSelect')?parseInt(document.getElementById('weekSelect').value):16;
-const recent=periods.slice(-weekCount);
- const curG=gRows.find(d=>d.주차===currentPeriod);
+  const recent=periods.slice(-weekCount);
+  const curG=gRows.find(d=>d.주차===currentPeriod);
   const gScore=curG?curG.평점:0;
   const gInc=curG?curG.증감:0;
   const gReviews=curG?curG.후기갯수:0;
@@ -361,22 +336,26 @@ const recent=periods.slice(-weekCount);
     {name:'트립어드바이저',score:tScore?+(tScore*2).toFixed(2):0,sub:`원점수 ${tScore}/5`,max:10}
   ];
 
-const gTrend=recent.map(p=>{
-  const g=gRows.find(d=>d.주차===p);
-  const otaP=[...new Set(otaData.filter(d=>d.지점===bShort).map(d=>d.주차))];
-  const otaClosest=otaP.reduce((a,c)=>Math.abs(new Date(c.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')))<Math.abs(new Date(a.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')))?c:a,otaP[0]||'');
-  const otaRows=otaData.filter(d=>d.지점===bShort&&d.주차===otaClosest);
-  const otaAvg=otaRows.length?otaRows.reduce((s,d)=>s+d.환산점수,0)/otaRows.length:0;
-  const tRow=tripData.find(d=>d.지점===b&&d.주차===p);
-  if(!g)return null;
-  const total=((otaAvg||0)+(g.평점*2)+(tRow?tRow.평점*2:g.평점*2))/3;
-  return+total.toFixed(2);
-});
- const gIncTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
+  const trendData=recent.map(p=>{
+    const g=gRows.find(d=>d.주차===p);
+    const otaClosest=otaPeriods.length?otaPeriods.reduce((a,c)=>{
+      const diff1=Math.abs(new Date(c.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
+      const diff2=Math.abs(new Date(a.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
+      return diff1<diff2?c:a;
+    },otaPeriods[0]):'';
+    const otaRows=otaData.filter(d=>d.지점===bShort&&d.주차===otaClosest);
+    const otaAvg=otaRows.length?otaRows.reduce((s,d)=>s+d.환산점수,0)/otaRows.length:0;
+    const tRow=tripData.find(d=>d.지점===b&&d.주차===p);
+    if(!g)return null;
+    const total=((otaAvg||0)+(g.평점*2)+(tRow?tRow.평점*2:g.평점*2))/3;
+    return+total.toFixed(2);
+  });
+
+  const gIncTrend=recent.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
 
   document.getElementById('mainContent').innerHTML=`
     <div class="summary-row">
-     <div class="stat-card"><div class="stat-label">구글 평점</div><div class="stat-value" style="color:${scoreColor(gScore*2)}">${gScore?+(gScore*2).toFixed(1):'-'}</div><div class="stat-sub"><span class="${gInc>=0?'up':'down'}">${gInc>=0?'▲':'▼'}${Math.abs(gInc)}</span> 원점수 ${gScore}/5</div></div>
+      <div class="stat-card"><div class="stat-label">구글 평점</div><div class="stat-value" style="color:${scoreColor(gScore*2)}">${gScore?+(gScore*2).toFixed(1):'-'}</div><div class="stat-sub"><span class="${gInc>=0?'up':'down'}">${gInc>=0?'▲':'▼'}${Math.abs(gInc)}</span> 원점수 ${gScore}/5</div></div>
       <div class="stat-card"><div class="stat-label">트립어드바이저 평점</div><div class="stat-value" style="color:${scoreColor(tScore*2)}">${tScore?+(tScore*2).toFixed(1):'-'}</div><div class="stat-sub">원점수 ${tScore}/5</div></div>
       <div class="stat-card"><div class="stat-label">OTA 평균 환산점수</div><div class="stat-value" style="color:${scoreColor(otaAvgBranch)}">${otaAvgBranch?otaAvgBranch.toFixed(2):'-'}</div><div class="stat-sub">10점 만점</div></div>
       <div class="stat-card"><div class="stat-label">관리 채널 수</div><div class="stat-value">${channelCards.length}</div><div class="stat-sub">OTA+구글+트립</div></div>
@@ -396,14 +375,14 @@ const gTrend=recent.map(p=>{
     </div>
     <div class="charts-row">
       <div class="chart-card">
-<div class="chart-title">통합 평점 추이
-  <select id="weekSelect" onchange="changeWeeks()" style="background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:4px 8px;border-radius:6px;font-size:11px;font-family:'Noto Sans KR',sans-serif;outline:none;cursor:pointer;">
-    <option value="4">최근 4주</option>
-    <option value="8">최근 8주</option>
-    <option value="16" selected>최근 16주</option>
-  </select>
-</div>
-<div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div>
+        <div class="chart-title">통합 평점 추이
+          <select class="week-select" onchange="onWeekChange(this.value)">
+            <option value="4">최근 4주</option>
+            <option value="8">최근 8주</option>
+            <option value="16" ${weekCount===16?'selected':''}>최근 16주</option>
+          </select>
+        </div>
+        <div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-title">주간 후기 증감</div>
@@ -424,11 +403,11 @@ const gTrend=recent.map(p=>{
             <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">트립 평점</th>
           </tr></thead>
           <tbody>
-            ${recent.slice().reverse().map(p=>{
+            ${periods.slice(-16).slice().reverse().map(p=>{
               const g=gRows.find(d=>d.주차===p);
               const t=tripData.find(d=>d.지점===b&&d.주차===p);
               const isCur=p===currentPeriod;
-              return`<tr style="border-top:1px solid var(--border);${isCur?'background:rgba(91,141,238,0.06);':''}">
+              return`<tr style="border-top:1px solid var(--border);${isCur?'background:rgba(74,124,247,0.04);':''}">
                 <td style="padding:7px 10px;color:var(--text2);font-family:'DM Mono',monospace;font-size:11px;">${p}</td>
                 <td style="padding:7px 10px;text-align:right;">${g?g.후기갯수.toLocaleString():'-'}</td>
                 <td style="padding:7px 10px;text-align:right;color:${g&&g.증감>0?'var(--green)':g&&g.증감<0?'var(--red)':'var(--text2)'}">${g?(g.증감>0?'+':'')+g.증감:'-'}</td>
@@ -447,15 +426,28 @@ const gTrend=recent.map(p=>{
     if(!ctx)return;
     trendChart=new Chart(ctx,{
       type:'line',
-      data:{labels:recent.map(p=>p.split('~')[0].trim().split('.').slice(1).join('/')),datasets:[{label:'구글 평점',data:gTrend,borderColor:'#ea4335',backgroundColor:'#ea433520',tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f8ba8',font:{size:10},maxRotation:45},grid:{color:'#252a3d'}},y:{ticks:{color:'#7f8ba8',font:{size:10}},grid:{color:'#252a3d'},min:6,max:10}
+      data:{
+        labels:recent.map(p=>p.split('~')[0].trim().split('.').slice(1).join('/')),
+        datasets:[{
+          label:'통합 평점',
+          data:trendData,
+          borderColor:'#4a7cf7',
+          backgroundColor:'#4a7cf720',
+          tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true
+        }]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{ticks:{color:'#6b7599',font:{size:10},maxRotation:45},grid:{color:'#e2e6f0'}},
+          y:{ticks:{color:'#6b7599',font:{size:10}},grid:{color:'#e2e6f0'},min:6,max:10}
+        }
+      }
     });
   },50);
 }
 
- function changeWeeks(){
-  render();
-}
 function selectBranchByName(name){
   document.querySelectorAll('#branchMenu .menu-item').forEach(el=>{
     if(el.textContent.trim()===name)selectBranch(name,el);
