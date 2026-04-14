@@ -396,23 +396,36 @@ function renderBranch(){
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead><tr style="border-bottom:1px solid var(--border);">
-            <th style="padding:8px 10px;text-align:left;color:var(--text2);font-weight:500;">주차</th>
+<th style="padding:8px 10px;text-align:left;color:var(--text2);font-weight:500;">주차</th>
             <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">구글 후기수</th>
             <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">증감</th>
             <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">구글 평점</th>
             <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">트립 평점</th>
+            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">OTA 평균</th>
+            <th style="padding:8px 10px;text-align:right;color:var(--text2);font-weight:500;">통합 점수</th>
           </tr></thead>
           <tbody>
             ${periods.slice(-16).slice().reverse().map(p=>{
               const g=gRows.find(d=>d.주차===p);
               const t=tripData.find(d=>d.지점===b&&d.주차===p);
               const isCur=p===currentPeriod;
+              const otaClosestP=otaPeriods.length?otaPeriods.reduce((a,c)=>{
+                  const d1=Math.abs(new Date(c.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
+                  const d2=Math.abs(new Date(a.split('.').join('-'))-new Date(p.split('~')[0].trim().split('.').join('-')));
+                  return d1<d2?c:a;
+                },otaPeriods[0]):'';
+                const otaRowsP=otaData.filter(d=>d.지점===bShort&&d.주차===otaClosestP);
+                const otaAvgP=otaRowsP.length?+(otaRowsP.reduce((s,d)=>s+d.환산점수,0)/otaRowsP.length).toFixed(2):0;
+                const totalP=g?+((otaAvgP||0)+(g.평점*2)+(t?t.평점*2:g.평점*2)).toFixed(2)/3:0;
               return`<tr style="border-top:1px solid var(--border);${isCur?'background:rgba(74,124,247,0.04);':''}">
                 <td style="padding:7px 10px;color:var(--text2);font-family:'DM Mono',monospace;font-size:11px;">${p}</td>
                 <td style="padding:7px 10px;text-align:right;">${g?g.후기갯수.toLocaleString():'-'}</td>
                 <td style="padding:7px 10px;text-align:right;color:${g&&g.증감>0?'var(--green)':g&&g.증감<0?'var(--red)':'var(--text2)'}">${g?(g.증감>0?'+':'')+g.증감:'-'}</td>
                 <td style="padding:7px 10px;text-align:right;color:${g?scoreColor(g.평점*2):'var(--text2)'};">${g?g.평점:'-'}</td>
                 <td style="padding:7px 10px;text-align:right;color:${t&&t.평점?scoreColor(t.평점*2):'var(--text2)'};">${t&&t.평점?t.평점:'-'}</td>
+                <td style="padding:7px 10px;text-align:right;color:${otaAvgP?scoreColor(otaAvgP):'var(--text2)'};">${otaAvgP||'-'}</td>
+                <td style="padding:7px 10px;text-align:right;font-weight:600;color:${totalP?scoreColor(totalP):'var(--text2)'};">${totalP?totalP.toFixed(2):'-'}</td>
+              </tr>`;
               </tr>`;
             }).join('')}
           </tbody>
