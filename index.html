@@ -430,7 +430,21 @@ function renderBranch(){
   const minVal=validData.length?Math.max(0,Math.floor(Math.min(...validData))-1):0;
   const maxVal=validData.length?Math.min(10,Math.ceil(Math.max(...validData))+1):10;
 
-  const gIncTrend=recent4.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
+  const gIncTrend=recent4.map(p=>{
+    const gI=gRows.find(d=>d.주차===p)?gRows.find(d=>d.주차===p).증감:0;
+    const otaC=getClosestPeriod(otaPeriods,p);
+    const otaPv=getClosestPeriod(otaPeriods,periods[periods.indexOf(p)-1]||'');
+    const oI=otaC&&otaPv&&otaC!==otaPv?Math.round(
+      otaData.filter(d=>d.지점===bShort&&d.주차===otaC).reduce((s,d)=>s+d.리뷰갯수,0)-
+      otaData.filter(d=>d.지점===bShort&&d.주차===otaPv).reduce((s,d)=>s+d.리뷰갯수,0)
+    ):0;
+    const tC=getClosestPeriod(tBranchPeriods,p);
+    const tPv=getClosestPeriod(tBranchPeriods,periods[periods.indexOf(p)-1]||'');
+    const tCRow=tC?tripData.find(d=>d.지점===b&&d.주차===tC):null;
+    const tPvRow=tPv?tripData.find(d=>d.지점===b&&d.주차===tPv):null;
+    const tI=Math.round((tCRow?tCRow.후기갯수:0)-(tPvRow?tPvRow.후기갯수:0));
+    return gI+oI+tI;
+  });
   const mxInc=Math.max(...gIncTrend.map(Math.abs),1);
 
   let html='';
