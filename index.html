@@ -372,7 +372,7 @@ function renderBranch(){
     const g=gRows.find(d=>d.주차===p);
     const otaAvg=getOtaAvg(bShort,p,otaPeriods);
     const tBP=[...new Set(tripData.filter(d=>d.지점===b).map(d=>d.주차))];
-    const tClosest=tBP.length?tBP.reduce((a,c)=>{const d1=Math.abs(new Date(c.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')));const d2=Math.abs(new Date(a.replace(/\./g,'-'))-new Date(p.split('~')[0].trim().replace(/\./g,'-')));return d1<d2?c:a;},tBP[0]):'';
+const tClosest=tBP.length?tBP.reduce((a,c)=>{const d1=Math.abs(getPeriodEndDate(c)-getPeriodEndDate(p));const d2=Math.abs(getPeriodEndDate(a)-getPeriodEndDate(p));return d1<d2?c:a;},tBP[0]):'';
     const tRow=tClosest?tripData.find(d=>d.지점===b&&d.주차===tClosest):null;
     if(!g)return null;
     const parts=[];
