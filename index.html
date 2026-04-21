@@ -474,7 +474,7 @@ function renderBranch(){
   html+='<div class="charts-row">';
   html+='<div class="chart-card"><div class="chart-title">통합 평점 추이<select class="week-select" onchange="onWeekChange(this.value)"><option value="4"'+(weekCount===4?' selected':'')+'>최근 4주</option><option value="8"'+(weekCount===8?' selected':'')+'>최근 8주</option><option value="16"'+(weekCount===16?' selected':'')+'>최근 16주</option></select></div><div style="position:relative;height:180px;"><canvas id="trendChart"></canvas></div></div>';
 
-  html+='<div class="chart-card"><div class="chart-title">주간 구글 후기 증감 (최근 4주)</div><div class="increase-list">';
+  html+='<div class="chart-card"><div class="chart-title">주간 전체 후기 증감 (최근 4주)</div><div class="increase-list">';
   recent4.forEach((p,i)=>{
     const v=gIncTrend[i];
     html+='<div class="increase-item"><div class="increase-label">'+p.split('~')[0].trim().split('.').slice(1).join('/')+'</div><div class="increase-bar-wrap"><div class="increase-bar" style="width:'+(Math.abs(v)/mxInc*100).toFixed(0)+'%;background:'+(v>=0?'var(--green)':'var(--red)')+'"></div></div><div class="increase-val" style="color:'+(v>=0?'var(--green)':'var(--red)')+'">'+( v>=0?'+':'')+v+'</div></div>';
