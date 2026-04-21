@@ -296,8 +296,15 @@ const totalBranchCount2=[...new Set(otaData.map(d=>d.지점))].length;
   });
   html+='</div></div></div>';
 
-  html+='<div class="section-label">OTA 채널별 전체 평균</div><div class="channel-grid">';
-  chAvgs.forEach(c=>{
+ const gAvg10=+(gAvg*2).toFixed(2);
+  const tAvg10=+(tAvg*2).toFixed(2);
+  const allChannels=[
+    ...chAvgs,
+    ...(gAvg10>0?[{name:'구글',score:gAvg10}]:[]),
+    ...(tAvg10>0?[{name:'트립어드바이저',score:tAvg10}]:[])
+  ].sort((a,b)=>b.score-a.score);
+  html+='<div class="section-label">채널별 전체 평균 (10점 만점)</div><div class="channel-grid">';
+  allChannels.forEach(c=>{
     html+='<div class="channel-card"><div class="channel-name">'+c.name+'</div><div class="channel-score" style="color:'+scoreColor(c.score)+'">'+c.score+'<span style="font-size:12px;color:var(--text2);font-weight:400;"> /10</span></div><div class="channel-bar-wrap"><div class="channel-bar" style="width:'+(c.score/10*100).toFixed(0)+'%;background:'+scoreColor(c.score)+'"></div></div></div>';
   });
   html+='</div>';
