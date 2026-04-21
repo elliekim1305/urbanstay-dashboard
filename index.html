@@ -418,11 +418,12 @@ function renderBranch(){
     const otaAvg=getOtaAvg(bShort,p,otaPeriods);
     const tS=getTripScore(b,p,tBranchPeriods);
     if(!g)return null;
-    const parts=[];
+   const parts=[];
     if(otaAvg>0)parts.push(otaAvg);
     if(g.평점>0)parts.push(g.평점*2);
-    if(tS>0)parts.push(tS*2);
-    return parts.length?+(parts.reduce((s,v)=>s+v,0)/parts.length).toFixed(2):null;
+    if(tS>0)parts.push(Math.min(tS*2,10));
+    const result=parts.length?+(parts.reduce((s,v)=>s+v,0)/parts.length).toFixed(2):null;
+    return result?Math.min(result,10):null;
   });
 
   const validData=trendData.filter(v=>v!==null);
