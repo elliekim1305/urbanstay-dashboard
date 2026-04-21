@@ -174,11 +174,16 @@ function scoreColor(s){
   return'#e85555';
 }
 
+function getPeriodEndDate(p){
+  const parts=p.split('~');
+  return new Date((parts[parts.length-1]||parts[0]).trim().replace(/\./g,'-'));
+}
 function getOtaAvg(bShort,period,otaPeriods){
   if(!otaPeriods.length||!period)return 0;
+  const target=getPeriodEndDate(period);
   const closest=otaPeriods.reduce((a,c)=>{
-    const d1=Math.abs(new Date(c.replace(/\./g,'-'))-new Date(period.split('~')[0].trim().replace(/\./g,'-')));
-    const d2=Math.abs(new Date(a.replace(/\./g,'-'))-new Date(period.split('~')[0].trim().replace(/\./g,'-')));
+    const d1=Math.abs(getPeriodEndDate(c)-target);
+    const d2=Math.abs(getPeriodEndDate(a)-target);
     return d1<d2?c:a;
   },otaPeriods[0]);
   const rows=otaData.filter(d=>d.지점===bShort&&d.주차===closest);
