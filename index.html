@@ -174,13 +174,12 @@ function scoreColor(s){
   return'#e85555';
 }
 
-// 주차 끝 날짜 추출
 function getPeriodEndDate(p){
   const parts=p.split('~');
   const raw=(parts.length>1?parts[1]:parts[0]).trim();
   const nums=raw.match(/\d+/g);
-  if(!nums||nums.length<3)return new Date(raw.replace(/\./g,'-'));
-  return new Date(nums[0]+'-'+nums[1].padStart(2,'0')+'-'+nums[2].padStart(2,'0'));
+  if(!nums||nums.length<3)return new Date(0);
+  return new Date(Number(nums[0]),Number(nums[1])-1,Number(nums[2]));
 }
 
 function getClosestPeriod(periods,targetPeriod){
@@ -390,6 +389,10 @@ function renderBranch(){
     return parts.length?+(parts.reduce((s,v)=>s+v,0)/parts.length).toFixed(2):null;
   });
 
+  const validData=trendData.filter(v=>v!==null);
+  const minVal=validData.length?Math.max(0,Math.floor(Math.min(...validData))-1):0;
+  const maxVal=validData.length?Math.min(10,Math.ceil(Math.max(...validData))+1):10;
+
   const gIncTrend=recent4.map(p=>{const r=gRows.find(d=>d.주차===p);return r?r.증감:0;});
   const mxInc=Math.max(...gIncTrend.map(Math.abs),1);
 
@@ -466,7 +469,7 @@ function renderBranch(){
     trendChart=new Chart(ctx,{
       type:'line',
       data:{labels:recent.map(p=>p.split('~')[0].trim().split('.').slice(1).join('/')),datasets:[{label:'통합 평점',data:trendData,borderColor:'#4a7cf7',backgroundColor:'#4a7cf720',tension:0.3,pointRadius:4,borderWidth:2,fill:true,spanGaps:true}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b7599',font:{size:10},maxRotation:45},grid:{color:'#e2e6f0'}},y:{ticks:{color:'#6b7599',font:{size:10}},grid:{color:'#e2e6f0'}}
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#6b7599',font:{size:10},maxRotation:45},grid:{color:'#e2e6f0'}},y:{ticks:{color:'#6b7599',font:{size:10}},grid:{color:'#e2e6f0'},min:minVal,max:maxVal}}}
     });
   },50);
 }
