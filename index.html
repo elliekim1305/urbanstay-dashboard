@@ -193,15 +193,20 @@ function getPeriodStartDate(p){
 }
 function getTripScore(branchName,period,tPeriods){
   if(!tPeriods.length||!period)return 0;
-  const targetStart=getPeriodStartDate(period);
   const targetEnd=getPeriodEndDate(period);
-  // 구글 주차 범위와 겹치는 트립 주차 찾기
-  const matched=tPeriods.filter(tp=>{
-    const tStart=getPeriodStartDate(tp);
-    const tEnd=getPeriodEndDate(tp);
-    return tStart<=targetEnd&&tEnd>=targetStart;
+  // 끝날짜 기준으로 정렬된 트립 주차에서 가장 가까운 것 찾기
+  // 단, 트립 주차 끝날짜와 구글 주차 끝날짜 차이가 14일 이내인 것만
+  const sorted=[...tPeriods].sort((a,b)=>getPeriodEndDate(a)-getPeriodEndDate(b));
+  const valid=sorted.filter(tp=>{
+    const d=Math.abs(getPeriodEndDate(tp)-targetEnd);
+    return d<=14*24*60*60*1000;
   });
-  const closest=matched.length?matched[matched.length-1]:getClosestPeriod(tPeriods,period);
+  if(!valid.length)return 0;
+  const closest=valid.reduce((a,c)=>{
+    const d1=Math.abs(getPeriodEndDate(c)-targetEnd);
+    const d2=Math.abs(getPeriodEndDate(a)-targetEnd);
+    return d1<d2?c:a;
+  },valid[0]);
   const row=tripData.find(d=>d.지점===branchName&&d.주차===closest&&d.후기갯수>0);
   return row?row.평점:0;
 }
