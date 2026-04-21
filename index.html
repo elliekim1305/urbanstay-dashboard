@@ -202,10 +202,12 @@ function getOtaAvg(bShort,period,otaPeriods){
 function getTripScore(branchName,period,tPeriods){
   if(!tPeriods.length||!period)return 0;
   const closest=getClosestPeriod(tPeriods,period);
+  const diff=Math.abs(getPeriodEndDate(closest)-getPeriodEndDate(period));
+  if(diff>21*24*60*60*1000)return 0;
   const row=tripData.find(d=>d.지점===branchName&&d.주차===closest&&d.후기갯수>0);
   return row?row.평점:0;
 }
-
+  
 function calcTotalIncrease(period){
   const gInc=googleData.filter(d=>d.주차===period&&!EXCLUDED.includes(d.지점)).reduce((s,d)=>s+d.증감,0);
   const otaPeriodsAll=[...new Set(otaData.map(d=>d.주차))].sort((a,b)=>getPeriodEndDate(a)-getPeriodEndDate(b));
