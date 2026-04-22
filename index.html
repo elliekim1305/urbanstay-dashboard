@@ -275,12 +275,12 @@ function renderOverall(){
     const gPrev=googleData.find(d=>d.지점===b&&d.주차===prevP);
     const tS=getTripScore(b,currentPeriod,tPeriods);
     const tSPrev=getTripScore(b,prevP,tPeriods);
-    const parts=[];
-    if(otaAvg>0)parts.push(otaAvg);
+    const otaChannels=otaData.filter(d=>d.지점===bShort&&d.주차===getClosestPeriod(bOtaPeriods,currentPeriod));
+    const otaChannelsPrev=otaData.filter(d=>d.지점===bShort&&d.주차===getClosestPeriod(bOtaPeriods,prevP));
+    const parts=[...otaChannels.map(d=>d.환산점수)];
     if(g&&g.평점>0)parts.push(g.평점*2);
     if(tS>0)parts.push(Math.min(tS*2,10));
-    const partsPrev=[];
-    if(otaAvgPrev>0)partsPrev.push(otaAvgPrev);
+    const partsPrev=[...otaChannelsPrev.map(d=>d.환산점수)];
     if(gPrev&&gPrev.평점>0)partsPrev.push(gPrev.평점*2);
     if(tSPrev>0)partsPrev.push(Math.min(tSPrev*2,10));
     const score=parts.length?+(parts.reduce((s,v)=>s+v,0)/parts.length).toFixed(2):0;
