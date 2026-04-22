@@ -269,8 +269,6 @@ function renderOverall(){
   const branchRanks=[...new Set(googleData.map(d=>d.지점))].filter(b=>!EXCLUDED.includes(b)).map(b=>{
     const bShort=OTA_MAP[b]||b.replace(/^\d+\./,'').trim();
     const bOtaPeriods=[...new Set(otaData.filter(d=>d.지점===bShort).map(d=>d.주차))].sort((a,c)=>getPeriodEndDate(a)-getPeriodEndDate(c));
-    const otaAvg=getOtaAvg(bShort,currentPeriod,bOtaPeriods);
-    const otaAvgPrev=getOtaAvg(bShort,prevP,bOtaPeriods);
     const g=googleData.find(d=>d.지점===b&&d.주차===currentPeriod);
     const gPrev=googleData.find(d=>d.지점===b&&d.주차===prevP);
     const tS=getTripScore(b,currentPeriod,tPeriods);
